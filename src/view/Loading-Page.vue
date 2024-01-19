@@ -11,6 +11,7 @@ export default {};
 body {
   background-color: aquamarine;
 }
+
 h4 {
   position: absolute;
   bottom: 20px;
@@ -21,6 +22,7 @@ h4 {
   font-family: sans-serif;
   color: #fff;
 }
+
 #container {
   width: 70px;
   height: 35px;
@@ -29,6 +31,7 @@ h4 {
   top: calc(50% - 17px);
   left: calc(50% - 35px);
 }
+
 #loader {
   width: 70px;
   height: 70px;
@@ -42,22 +45,26 @@ h4 {
   animation: rotate 3s ease-in-out infinite;
   transform: rotate(-200deg);
 }
+
 @keyframes rotate {
   0% {
     border-width: 10px;
   }
+
   25% {
     border-width: 3px;
   }
+
   50% {
     transform: rotate(115deg);
     border-width: 10px;
   }
+
   75% {
     border-width: 3px;
   }
+
   100% {
     border-width: 10px;
   }
-}
-</style>
+}</style>

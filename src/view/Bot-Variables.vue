@@ -1,27 +1,12 @@
 <template>
   <div class="assistant__list__group-container">
-    <button
-      type="button"
-      class="assistant__list__group"
-      tabindex="0"
-      @click="showList = !showList"
-    >
+    <button type="button" class="assistant__list__group" tabindex="0" @click="showList = !showList">
       <div class="assistant__list__group__icon">
         <span class="icon icon--image aa-icon-color icon--animate-none"></span>
-        <img
-          v-if="showList"
-          class="taskbotnodeicon taskbotnodeicon--theme-default"
-          src="../assets/collapse.svg"
-          style="width: 16px; height: 16px; font-size: 16px"
-          title="Click to collapse"
-        />
-        <img
-          v-else
-          class="taskbotnodeicon taskbotnodeicon--theme-default"
-          src="../assets/expand.svg"
-          style="width: 16px; height: 16px; font-size: 16px"
-          title="Click to expand"
-        />
+        <img v-if="showList" class="taskbotnodeicon taskbotnodeicon--theme-default" src="../assets/collapse.svg"
+          style="width: 16px; height: 16px; font-size: 16px" title="Click to collapse" />
+        <img v-else class="taskbotnodeicon taskbotnodeicon--theme-default" src="../assets/expand.svg"
+          style="width: 16px; height: 16px; font-size: 16px" title="Click to expand" />
       </div>
 
       <div class="assistant__list__group__label">
@@ -33,24 +18,15 @@
       </div>
     </button>
     <div class="assistant__list__group_children" v-show="showList">
-      <button
-        v-for="variable in variablesWithIssue"
-        :key="variable"
-        type="button"
-        class="
+      <button v-for="variable in variablesWithIssue" :key="variable" type="button" class="
           assistant__list__option
           assistant__list__option--icon
           assistant__list__option--clickable
-        "
-        tabindex="0"
-        @click="openVariableByName(variable.name), setActiveVariable(variable)"
-        :class="{
+        " tabindex="0" @click="openVariableByName(variable.name), setActiveVariable(variable)" :class="{
           'assistant__list__option--active':
             JSON.stringify(activeVariable) == JSON.stringify(variable),
-        }"
-      >
-        <span class="assistant__list__option__label" title=""
-          >{{ variable.name }}
+        }">
+        <span class="assistant__list__option__label" title="">{{ variable.name }}
         </span>
         <span class="font-museo-sans-200"> {{ variable.IssueDetail }}</span>
       </button>
@@ -67,7 +43,7 @@ export default {
     },
     preferences: {
       type: Object,
-      default: () => {},
+      default: () => { },
     },
   },
   data() {
@@ -156,7 +132,7 @@ export default {
         if (
           this.preferences?.variables.variableMinSize &&
           botVariable.name.toString().length <
-            this.preferences?.variables.variableMinSize
+          this.preferences?.variables.variableMinSize
         ) {
           botVariable["IssueDetail"] =
             "Variable name length less than allowed minimum length of " +
@@ -172,7 +148,7 @@ export default {
     },
   },
   methods: {
-    
+
     openVariableByName(variableName) {
       if (variableName) {
         chrome.tabs.query(

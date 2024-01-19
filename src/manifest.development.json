@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Bot Assistant",
   "description": "Automation Anywhwere A360 Assistant",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "action": {
     "default_title": "Toggle Bot Assistant",
     "default_icon": "icon16.png"

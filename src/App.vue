@@ -30,13 +30,14 @@
         <div v-if="botContentJSON" class="assistant__content">
           <div class="assistant__header">
             <div class="assistant__header__title prevent-select" @click="setActiveHeader('Default')" :class="{
-                'assistant__header__title--active': 'Default' == activeHeader,
-              }">
+              'assistant__header__title--active': 'Default' == activeHeader,
+            }">
               Total issues ({{ totalIssues }})
             </div>
-            <div v-if="supportedPageType === 'privateBot'" class="assistant__header__title prevent-select" @click="setActiveHeader('Tools')" :class="{
-              'assistant__header__title--active': 'Tools' == activeHeader,
-            }">
+            <div v-if="supportedPageType === 'privateBot'" class="assistant__header__title prevent-select"
+              @click="setActiveHeader('Tools')" :class="{
+                'assistant__header__title--active': 'Tools' == activeHeader,
+              }">
               Tools
             </div>
           </div>
@@ -51,7 +52,7 @@
                 :variablesArray="botVariablesJSON" :preferences="preferences" />
             </div>
             <div v-if="activeHeader == 'Tools'" class="assistant__list">
-              <BotToolsUI :botContent="botContentJSON"/>
+              <BotToolsUI :botContent="botContentJSON" />
             </div>
           </div>
         </div>
@@ -60,13 +61,13 @@
         <div v-if="folderContentJSON" class="assistant__content">
           <div class="assistant__header">
             <div class="assistant__header__title prevent-select" @click="setActiveHeader('Default')" :class="{
-                'assistant__header__title--active': 'Default' == activeHeader,
-              }">
+              'assistant__header__title--active': 'Default' == activeHeader,
+            }">
               Clipboard
             </div>
             <div class="assistant__header__title prevent-select" @click="setActiveHeader('Tools')" :class="{
-                'assistant__header__title--active': 'Tools' == activeHeader,
-              }">
+              'assistant__header__title--active': 'Tools' == activeHeader,
+            }">
               Tools
             </div>
           </div>
@@ -76,7 +77,7 @@
                 :folderPath="folderPath" />
             </div>
             <div v-if="activeHeader == 'Tools'" class="assistant__list">
-              <BotFolderToolsUI :folderContentJSON="folderContentJSON"/>
+              <BotFolderToolsUI :folderContentJSON="folderContentJSON" />
             </div>
           </div>
         </div>

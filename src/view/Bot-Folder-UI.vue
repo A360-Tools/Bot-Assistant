@@ -14,8 +14,8 @@
     </button>
     <button type="button" class="assistant__list__group" :tabindex="clipboardItems.length - 1"
       @click="pasteFromClipboard()" :class="{
-          'btn-disable': clipboardItems.length == 0,
-        }">
+        'btn-disable': clipboardItems.length == 0,
+      }">
       <div class="assistant__list__group__icon">
         <span class="icon icon--image aa-icon-color icon--animate-none"></span>
         <img class="taskbotnodeicon taskbotnodeicon--theme-default" src="../assets/clipboard-paste.svg"

@@ -73,22 +73,15 @@ chrome.runtime.onConnect.addListener((port) => {
           return true;
         }
         case "DOWNLOAD_FILE": {
-          downloadFile(
-            message.fileId,
-            message.fileName
-          );
+          downloadFile(message.fileId, message.fileName);
           return true;
         }
         case "UPDATE_PACKAGES": {
-          updatePackages(
-            message.fileIds
-          );
+          updatePackages(message.fileIds);
           return true;
         }
         case "PUT_CONTENT": {
-          putCurrentBotContent(
-            message.content
-          );
+          putCurrentBotContent(message.content);
           return true;
         }
         default:
@@ -215,10 +208,8 @@ function createDraggableAssistant() {
 }
 
 function toggleAssistantSize() {
-  assistantDiv.style.height == height
-    ? (assistantDiv.style.height = minHeight)
-    : (assistantDiv.style.height = height);
-
+  assistantDiv.style.height =
+    assistantDiv.style.height === height ? minHeight : height;
   getAssistantSize();
 }
 
@@ -479,12 +470,16 @@ function getFileDetails(filter) {
 
 function clickActionByLineNumber(lineNumber) {
   expandNodes();
-  let actionElement = getElementByXpath("(//div[contains(@class, 'taskbot-canvas-list-node__number') and text()=" + lineNumber + "]/..//div[contains(@class, 'taskbot-canvas-list-node__title')])[1]")
+  let actionElement = getElementByXpath(
+    `(//div[contains(@class, 'taskbot-canvas-list-node__number') and text()='${lineNumber}']/..//div[contains(@class, 'taskbot-canvas-list-node__title')])[1]`
+  );
   if (actionElement) {
     actionElement.click();
     return true;
   }
-  actionElement = getElementByXpath("(//div[contains(@class, 'taskbotlistnode-number') and text()=" + lineNumber + "]/..//div[contains(@class, 'taskbotlistnode-title')])[1]")
+  actionElement = getElementByXpath(
+    `(//div[contains(@class, 'taskbotlistnode-number') and text()='${lineNumber}']/..//div[contains(@class, 'taskbotlistnode-title')])[1]`
+  );
   if (actionElement) {
     actionElement.click();
     return true;
@@ -493,28 +488,35 @@ function clickActionByLineNumber(lineNumber) {
 }
 
 function openVariableByName(variableName) {
-  let VariableButtonXpath = "//button[text()='" + variableName + "']";
+  let userDefinedVariablesButton = document.querySelector(
+    `button[data-group-name="variable-group:USER_DEFINED"]`
+  );
+  let workItemVariablesButton = document.querySelector(
+    `button[data-group-name="variable-group:WORK_ITEM"]`
+  );
   if (
-    document
-      .getElementsByName("variable-group:USER_DEFINED")[0]
-      ?.getAttribute("aria-expanded") == "false"
+    userDefinedVariablesButton &&
+    !userDefinedVariablesButton.hasAttribute("data-open")
   ) {
-    document.getElementsByName("variable-group:USER_DEFINED")[0].click();
+    userDefinedVariablesButton.click();
   }
 
   if (
-    document
-      .getElementsByName("variable-group:WORK_ITEM")[0]
-      ?.getAttribute("aria-expanded") == "false"
+    workItemVariablesButton &&
+    !workItemVariablesButton.hasAttribute("data-open")
   ) {
-    document.getElementsByName("variable-group:WORK_ITEM")[0].click();
+    workItemVariablesButton.click();
   }
-  getElementByXpath(VariableButtonXpath).click();
+  document
+    .querySelector(
+      `div[data-item-name='${variableName.toLowerCase()}'] button[name='item-button']`
+    )
+    ?.click();
   return true;
 }
 
 function collapseNodes() {
-  getElementByXpath("//button[@role='tab'][2]").click();
+  document.querySelectorAll(`button[role='tab']`)[1].click();
   let elem = document.querySelectorAll(
     ".taskbotlistnode-collapser>.fa-caret-down"
   );
@@ -536,11 +538,10 @@ function collapseNodes() {
       ".taskbot-canvas-list-node__collapser>.fa-caret-down"
     );
   }
-
 }
 
 function expandNodes() {
-  getElementByXpath("//button[@role='tab'][2]").click();
+  document.querySelectorAll(`button[role='tab']`)[1].click();
   let elem = document.querySelectorAll(
     ".taskbotlistnode-collapser>.fa-caret-right"
   );
@@ -551,7 +552,6 @@ function expandNodes() {
       ".taskbotlistnode-collapser>.fa-caret-right"
     );
   }
-
 
   elem = document.querySelectorAll(
     ".taskbot-canvas-list-node__collapser>.fa-caret-right"
@@ -593,9 +593,11 @@ function getSelectedRowItems() {
 function addTaskSavedObserver() {
   let mainLayout = document.getElementById("root");
   if (!mainLayout) {
+    console.log("root element not loaded");
     window.setTimeout(addTaskSavedObserver, 500);
     return;
   }
+  console.log("root element loaded");
   const taskConfig = {
     attributes: true,
     subtree: true,
@@ -605,7 +607,7 @@ function addTaskSavedObserver() {
     for (const mutation of mutationList) {
       if (
         mutation.target.classList.contains("editor-page-saver") &&
-        mutation.target["innerText"] == "Saved"
+        mutation.target["innerText"].trim() == "Saved"
       ) {
         framePort.postMessage({
           type: "RELOAD",
@@ -655,6 +657,7 @@ function refreshFolderList() {
     document.getElementsByName("table-refresh")[0].click();
   }
 }
+
 function downloadFile(fileID, fileName) {
   let origin = window.location.origin;
   let downloadFileURL = origin + downloadFileURI.replace("<fileID>", fileID);
@@ -676,13 +679,14 @@ function downloadFile(fileID, fileName) {
       throw new Error("Fetch failed");
     })
     .then((blob) => {
-      downloadFilePrompt(blob, fileName)
+      downloadFilePrompt(blob, fileName);
     })
     .catch(function (error) {
       console.log(error);
       return false;
     });
 }
+
 function downloadFilePrompt(blob, name) {
   const href = URL.createObjectURL(blob);
   const a = Object.assign(document.createElement("a"), {
@@ -699,12 +703,12 @@ function downloadFilePrompt(blob, name) {
 async function updatePackages(fileIds) {
   let defaultPackageVersions = await getDefaultPackageVersions();
   const packageVersionsMap = new Map();
-  defaultPackageVersions.list.forEach(pkg => {
+  defaultPackageVersions.list.forEach((pkg) => {
     packageVersionsMap.set(pkg.name, pkg.packageVersion);
   });
 
   for (let fileId of fileIds) {
-    await updateTaskPackages(fileId, packageVersionsMap)
+    await updateTaskPackages(fileId, packageVersionsMap);
   }
   framePort.postMessage({
     type: "PACKAGES_UPDATED",
@@ -786,8 +790,7 @@ function getBotJSONContent(fileId) {
 
 function getDefaultPackageVersions() {
   let origin = window.location.origin;
-  let packageListURL =
-    origin + packageListURI;
+  let packageListURL = origin + packageListURI;
   let authToken = localStorage.authToken.toString().slice(1, -1);
 
   let myHeaders = new Headers();

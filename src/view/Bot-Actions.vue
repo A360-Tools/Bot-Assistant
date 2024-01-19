@@ -1,27 +1,12 @@
 <template>
   <div class="assistant__list__group-container">
-    <button
-      type="button"
-      class="assistant__list__group"
-      tabindex="0"
-      @click="showList = !showList"
-    >
+    <button type="button" class="assistant__list__group" tabindex="0" @click="showList = !showList">
       <div class="assistant__list__group__icon">
         <span class="icon icon--image aa-icon-color icon--animate-none"></span>
-        <img
-          v-if="showList"
-          class="taskbotnodeicon taskbotnodeicon--theme-default"
-          src="../assets/collapse.svg"
-          style="width: 16px; height: 16px; font-size: 16px"
-          title="Click to collapse"
-        />
-        <img
-          v-else
-          class="taskbotnodeicon taskbotnodeicon--theme-default"
-          src="../assets/expand.svg"
-          style="width: 16px; height: 16px; font-size: 16px"
-          title="Click to expand"
-        />
+        <img v-if="showList" class="taskbotnodeicon taskbotnodeicon--theme-default" src="../assets/collapse.svg"
+          style="width: 16px; height: 16px; font-size: 16px" title="Click to collapse" />
+        <img v-else class="taskbotnodeicon taskbotnodeicon--theme-default" src="../assets/expand.svg"
+          style="width: 16px; height: 16px; font-size: 16px" title="Click to expand" />
       </div>
 
       <div class="assistant__list__group__label">
@@ -33,31 +18,20 @@
       </div>
     </button>
     <div class="assistant__list__group_children" v-show="showList">
-      <button
-        v-for="action in actionsWithIssue"
-        :key="action"
-        type="button"
-        class="
+      <button v-for="action in actionsWithIssue" :key="action" type="button" class="
           assistant__list__option
           assistant__list__option--icon
           assistant__list__option--clickable
-        "
-        tabindex="0"
-        @click="
+        " tabindex="0" @click="
           clickActionByLineNumber(action.LineNumber), setActiveAction(action)
-        "
-        :class="{
-          'assistant__list__option--active':
-            JSON.stringify(activeAction) == JSON.stringify(action),
-        }"
-      >
-        <span class="assistant__list__option__label" title=""
-          >{{ action.commandName }} </span
-        ><span class="font-museo-sans-200">{{ action.IssueDetail }}</span>
-        <span class="assistant__list__option__description"
-          ><span v-if="action.LineNumber">Line {{ action.LineNumber }}</span
-          ><span v-if="action.issueType">{{ action.issueType }}</span></span
-        >
+          " :class="{
+    'assistant__list__option--active':
+      JSON.stringify(activeAction) == JSON.stringify(action),
+  }">
+        <span class="assistant__list__option__label" title="">{{ action.commandName }} </span><span
+          class="font-museo-sans-200">{{ action.IssueDetail }}</span>
+        <span class="assistant__list__option__description"><span v-if="action.LineNumber">Line {{ action.LineNumber
+        }}</span><span v-if="action.issueType">{{ action.issueType }}</span></span>
       </button>
     </div>
   </div>
@@ -76,7 +50,7 @@ export default {
     },
     preferences: {
       type: Object,
-      default: () => {},
+      default: () => { },
     },
   },
   data() {

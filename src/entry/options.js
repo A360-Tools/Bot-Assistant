@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
-import App from '../Options-Page.vue'
+import { createApp } from "vue";
+import App from "../Options-Page.vue";
 
-createApp(App).mount('#app')
+createApp(App).mount("#app");
