@@ -127,7 +127,7 @@ export default {
           priorityMedium: true,
           maxLineOfCode: 300,
           maxVariableCount: 50,
-          botCodeVersion: 4,
+          botCodeVersion: 5,
         },
         actions: {
           emptyContainersDisallowed: true,

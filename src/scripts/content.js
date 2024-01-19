@@ -11,8 +11,11 @@ const width = "256px";
 const height = "480px";
 const minHeight = "32px";
 const assistantDiv = createDraggableAssistant();
+let variableCache = [];
 addTaskSavedObserver();
 addFileSelectedObserver();
+addVariableObserver();
+
 let framePort;
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "frame") {
@@ -264,6 +267,8 @@ function getBotContent() {
       throw new Error("Fetch failed");
     })
     .then((json) => {
+      setVariableCache(json);
+      addInputOutputIcons();
       framePort.postMessage({
         type: "SET_BOT",
         data: json,
@@ -488,6 +493,11 @@ function clickActionByLineNumber(lineNumber) {
 }
 
 function openVariableByName(variableName) {
+  document
+    .querySelector('button[class*="editor-layout__resize-toggle"]')
+    ?.querySelector('span[class*="--icon_chevron-right"]')
+    ?.click();
+
   let userDefinedVariablesButton = document.querySelector(
     `button[data-group-name="variable-group:USER_DEFINED"]`
   );
@@ -652,6 +662,34 @@ function addFileSelectedObserver() {
   fileObserver.observe(mainLayout, fileConfig);
 }
 
+function addVariableObserver() {
+  let mainLayout = document.getElementById("root");
+  if (!mainLayout) {
+    console.log("root element not loaded");
+    window.setTimeout(addVariableObserver, 500);
+    return;
+  }
+  const taskCallback = (mutationsList) => {
+    outerLoop: for (const mutation of mutationsList) {
+      if (mutation.type === "childList") {
+        for (const node of mutation.addedNodes) {
+          if (
+            node.classList?.contains("editor-palette-item") ||
+            node.classList?.contains("editor-palette")
+          ) {
+            addInputOutputIcons();
+            break outerLoop;
+          }
+        }
+      }
+    }
+  };
+
+  const observer = new MutationObserver(taskCallback);
+  const config = { childList: true, subtree: true };
+  observer.observe(document.body, config);
+}
+
 function refreshFolderList() {
   if (document.getElementsByName("table-refresh")[0]) {
     document.getElementsByName("table-refresh")[0].click();
@@ -748,10 +786,6 @@ function putBotJSONContent(fileId, botJSONContent) {
     })
     .then((json) => {
       return json;
-      // framePort.postMessage({
-      //   type: "SET_BOT",
-      //   data: json,
-      // });
     })
     .catch(function (error) {
       console.log(error);
@@ -837,5 +871,51 @@ async function putCurrentBotContent(botJSONContent) {
   await putBotJSONContent(fileID, botJSONContent);
   framePort.postMessage({
     type: "PUT_CONTENT_SUCCESS",
+  });
+}
+
+function setVariableCache(botJSONContent) {
+  if (botJSONContent?.variables) {
+    variableCache = botJSONContent.variables;
+  }
+}
+
+function addInputOutputIcons() {
+  const elements = document.querySelectorAll("span.custom-variable-symbol");
+  elements.forEach((element) => {
+    element.parentNode.removeChild(element);
+  });
+
+  variableCache.forEach((variable) => {
+    let item = document.querySelector(
+      `div.editor-palette-item[data-item-name="${variable.name
+        .toLowerCase()
+        .trim()}"]`
+    );
+    if (!item) return;
+
+    item.style.position = "relative";
+
+    if (variable.input) {
+      let downArrow = document.createElement("span");
+      downArrow.textContent = "🡇";
+      downArrow.classList.add("custom-variable-symbol");
+      downArrow.style = `position: absolute; left: 0; top: 50%; color: #3c5e83; font-size: 15px; transform: translateY(-50%);z-index:10;`;
+      item.insertBefore(downArrow, item.firstChild);
+    } else if (variable.readOnly) {
+      let equalsSymbol = document.createElement("span");
+      equalsSymbol.textContent = "🟰";
+      equalsSymbol.classList.add("custom-variable-symbol");
+      equalsSymbol.style = `position: absolute; left: 0; top: 50%; color: #3c5e83; font-size: 12px; transform: translateY(-50%);z-index:10;`;
+      item.insertBefore(equalsSymbol, item.firstChild);
+    }
+
+    if (variable.output) {
+      let upArrow = document.createElement("span");
+      upArrow.textContent = "🡅";
+      upArrow.classList.add("custom-variable-symbol");
+      upArrow.style = `position: absolute; right: 0; top: 50%; color: #3c5e83; font-size: 15px; transform: translateY(-50%);z-index:10;`;
+      item.appendChild(upArrow);
+    }
   });
 }
