@@ -96,7 +96,7 @@ import BotBestPractice from "./view/Bot-BestPractice.vue";
 import BotToolsUI from "./view/Bot-Tools-UI.vue";
 import BotFolderUI from "./view/Bot-Folder-UI.vue";
 import BotFolderToolsUI from "./view/Bot-Folder-Tools-UI.vue";
-import { getGlobalPort,setGlobalPort } from './scripts/portManager.js';
+import { getGlobalPort, setGlobalPort } from './scripts/portManager.js';
 
 
 export default {
@@ -160,7 +160,6 @@ export default {
     };
   },
   mounted() {
-    console.log("mounted")
     let vm = this;
     chrome.storage.sync.get(["preferences"], function (value) {
       if (value["preferences"] != undefined)
@@ -173,7 +172,6 @@ export default {
       });
       setGlobalPort(port);
       port.onMessage.addListener((msg) => {
-        console.log("message received", msg);
         if (msg.type === "RELOAD") {
           vm.reloadPage();
         }

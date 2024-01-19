@@ -225,7 +225,6 @@ function getAssistantSize() {
     type: "SET_SIZE_STATE",
     state: state,
   });
-  console.log('set size state sent');
 }
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
@@ -604,11 +603,9 @@ function getSelectedRowItems() {
 function addTaskSavedObserver() {
   let mainLayout = document.getElementById("root");
   if (!mainLayout) {
-    console.log("root element not loaded");
     window.setTimeout(addTaskSavedObserver, 500);
     return;
   }
-  console.log("root element loaded");
   const taskConfig = {
     attributes: true,
     subtree: true,
@@ -620,7 +617,6 @@ function addTaskSavedObserver() {
         mutation.target.classList.contains("editor-page-saver") &&
         mutation.target["innerText"].trim() == "Saved"
       ) {
-        console.log("Saved, sending reload");
         framePort.postMessage({
           type: "RELOAD",
         });
@@ -647,7 +643,6 @@ function addFileSelectedObserver() {
   const fileCallback = (mutationList) => {
     for (const mutation of mutationList) {
       if (mutation.target.classList.contains("datatable-row")) {
-        console.log("file/folder selected");
         let selectedFiles = [];
         let selectedDataRows = document.getElementsByClassName(
           "datatable-row--selected"
@@ -669,7 +664,6 @@ function addFileSelectedObserver() {
 function addVariableObserver() {
   let mainLayout = document.getElementById("root");
   if (!mainLayout) {
-    console.log("root element not loaded");
     window.setTimeout(addVariableObserver, 500);
     return;
   }
@@ -764,7 +758,6 @@ async function updateTaskPackages(fileId, packageVersionsMap) {
     botJSONContent.packages[i].version = packageVersionsMap.get(packageName);
   }
   await putBotJSONContent(fileId, botJSONContent);
-  console.log(botJSONContent);
 }
 function putBotJSONContent(fileId, botJSONContent) {
   let origin = window.location.origin;
