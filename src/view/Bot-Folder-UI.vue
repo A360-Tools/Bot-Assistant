@@ -92,6 +92,7 @@
 
 <script>
 import LoadingPage from "./Loading-Page.vue";
+import { getGlobalPort } from '../scripts/portManager.js';
 export default {
   components: {
     LoadingPage,
@@ -122,30 +123,26 @@ export default {
   },
   mounted() {
     let vm = this;
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      const port = chrome.tabs.connect(tabs[0].id, {
-        name: "frame",
-      });
-      port.onMessage.addListener((msg) => {
-        if (msg.type === "DATA_ROW_CHANGE" && msg.data != undefined) {
-          vm.checkedItemsId = msg.data;
-        }
-        if (msg.type === "SET_ROW_ITEMS" && msg.data != undefined) {
-          vm.checkedItemsId = msg.data;
-        }
-      });
-
-      port.postMessage({
-        type: "GET_ROW_ITEMS",
-      });
-      vm.getClipboard();
-
-      chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === "local" && changes[vm.origin]) {
-          vm.getClipboard();
-        }
-      });
+    getGlobalPort().onMessage.addListener((msg) => {
+      if (msg.type === "DATA_ROW_CHANGE" && msg.data != undefined) {
+        vm.checkedItemsId = msg.data;
+      }
+      if (msg.type === "SET_ROW_ITEMS" && msg.data != undefined) {
+        vm.checkedItemsId = msg.data;
+      }
     });
+
+    getGlobalPort().postMessage({
+      type: "GET_ROW_ITEMS",
+    });
+    vm.getClipboard();
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "local" && changes[vm.origin]) {
+        vm.getClipboard();
+      }
+    });
+    // });
   },
   methods: {
     reloadPage() {
@@ -200,124 +197,106 @@ export default {
     },
     pasteFiles(fileList, destinationFolderID, destinationFolderPath) {
       let vm = this;
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        const port = chrome.tabs.connect(tabs[0].id, {
-          name: "frame",
-        });
-        let existingFileList = fileList.filter((file) => {
-          return (
-            file.path.substring(0, file.path.lastIndexOf("\\")) ==
-            destinationFolderPath
-          );
-        });
-
-        let filteredFileList = fileList.filter((file) => {
-          return (
-            file.path.substring(0, file.path.lastIndexOf("\\")) !=
-            destinationFolderPath
-          );
-        });
-
-        for (let file of filteredFileList) {
-          port.postMessage({
-            type: "COPY_FILE",
-            fileId: file.id,
-            fileName: file.name,
-            destinationFolderID: destinationFolderID,
-          });
-          vm.copyInProgress = true;
-        }
-        vm.copyInProgress = false;
-
-        if (existingFileList.length > 0)
-          vm.saveMessage = "Warn: file already present";
-        else vm.saveMessage = "Files Copied";
-        vm.showToast = true;
-        setTimeout(() => {
-          vm.showToast = false;
-          vm.reloadPage();
-        }, 1600);
+      let existingFileList = fileList.filter((file) => {
+        return (
+          file.path.substring(0, file.path.lastIndexOf("\\")) ==
+          destinationFolderPath
+        );
       });
+
+      let filteredFileList = fileList.filter((file) => {
+        return (
+          file.path.substring(0, file.path.lastIndexOf("\\")) !=
+          destinationFolderPath
+        );
+      });
+
+      for (let file of filteredFileList) {
+        getGlobalPort().postMessage({
+          type: "COPY_FILE",
+          fileId: file.id,
+          fileName: file.name,
+          destinationFolderID: destinationFolderID,
+        });
+        vm.copyInProgress = true;
+      }
+      vm.copyInProgress = false;
+
+      if (existingFileList.length > 0)
+        vm.saveMessage = "Warn: file already present";
+      else vm.saveMessage = "Files Copied";
+      vm.showToast = true;
+      setTimeout(() => {
+        vm.showToast = false;
+        vm.reloadPage();
+      }, 1600);
     },
 
     pasteFolders(folderList, destinationFolderID, destinationFolderPath) {
       let vm = this;
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        const port = chrome.tabs.connect(tabs[0].id, {
-          name: "frame",
-        });
-        //remove invalid folders
-        let circularReferenceList = folderList.filter((folder) => {
-          return destinationFolderPath.startsWith(folder.path);
-        });
-        if (circularReferenceList.length > 0) {
-          vm.saveMessage = "Warn: Folder circular reference found";
-          vm.showToast = true;
-          setTimeout(() => {
-            vm.showToast = false;
-          }, 3600);
-        }
+      let circularReferenceList = folderList.filter((folder) => {
+        return destinationFolderPath.startsWith(folder.path);
+      });
+      if (circularReferenceList.length > 0) {
+        vm.saveMessage = "Warn: Folder circular reference found";
+        vm.showToast = true;
+        setTimeout(() => {
+          vm.showToast = false;
+        }, 3600);
+      }
 
-        let filteredFolderList = folderList.filter((folder) => {
-          return !destinationFolderPath.startsWith(folder.path);
-        });
-        let folder = filteredFolderList.pop();
-        port.postMessage({
-          type: "COPY_FOLDER",
-          sourceFolderID: folder.id,
-          sourceFolderName: folder.name,
-          destinationFolderID: destinationFolderID,
-        });
-        vm.copyInProgress = true;
+      let filteredFolderList = folderList.filter((folder) => {
+        return !destinationFolderPath.startsWith(folder.path);
+      });
+      let folder = filteredFolderList.pop();
+      getGlobalPort().postMessage({
+        type: "COPY_FOLDER",
+        sourceFolderID: folder.id,
+        sourceFolderName: folder.name,
+        destinationFolderID: destinationFolderID,
+      });
+      vm.copyInProgress = true;
 
-        port.onMessage.addListener((msg) => {
-          if (msg.type === "FOLDER_COPIED") {
-            vm.copyInProgress = false;
-            if (filteredFolderList.length > 0) {
-              folder = filteredFolderList.pop();
-              if (folder) {
-                port.postMessage({
-                  type: "COPY_FOLDER",
-                  sourceFolderID: folder.id,
-                  sourceFolderName: folder.name,
-                  destinationFolderID: destinationFolderID,
-                });
-                vm.copyInProgress = true;
-              }
-            } else {
-              vm.saveMessage = "Folders Copied";
-              vm.showToast = true;
-              setTimeout(() => {
-                vm.showToast = false;
-                vm.reloadPage();
-              }, 1600);
+      getGlobalPort().onMessage.addListener((msg) => {
+        if (msg.type === "FOLDER_COPIED") {
+          vm.copyInProgress = false;
+          if (filteredFolderList.length > 0) {
+            folder = filteredFolderList.pop();
+            if (folder) {
+              getGlobalPort().postMessage({
+                type: "COPY_FOLDER",
+                sourceFolderID: folder.id,
+                sourceFolderName: folder.name,
+                destinationFolderID: destinationFolderID,
+              });
+              vm.copyInProgress = true;
             }
+          } else {
+            vm.saveMessage = "Folders Copied";
+            vm.showToast = true;
+            setTimeout(() => {
+              vm.showToast = false;
+              vm.reloadPage();
+            }, 1600);
           }
-        });
-
+        }
       });
     },
 
     downloadFile(file) {
       let vm = this;
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        const port = chrome.tabs.connect(tabs[0].id, {
-          name: "frame",
-        });
-        port.postMessage({
-          type: "DOWNLOAD_FILE",
-          fileId: file.id,
-          fileName: file.name,
-        });
-        vm.reloadPage();
+      getGlobalPort().postMessage({
+        type: "DOWNLOAD_FILE",
+        fileId: file.id,
+        fileName: file.name,
       });
+      vm.reloadPage();
     },
   },
   computed: {
     totalClipboardItems() {
       let totalClipboardItems =
         this.clipboardFileCount + this.clipboardFolderCount;
-
       // this.$emit("total-clipboard-items", totalClipboardItems);
       return totalClipboardItems;
     },

@@ -34,6 +34,7 @@
             }">
               Total issues ({{ totalIssues }})
             </div>
+            <!-- not enabling patching public bots -->
             <div v-if="supportedPageType === 'privateBot'" class="assistant__header__title prevent-select"
               @click="setActiveHeader('Tools')" :class="{
                 'assistant__header__title--active': 'Tools' == activeHeader,
@@ -95,6 +96,8 @@ import BotBestPractice from "./view/Bot-BestPractice.vue";
 import BotToolsUI from "./view/Bot-Tools-UI.vue";
 import BotFolderUI from "./view/Bot-Folder-UI.vue";
 import BotFolderToolsUI from "./view/Bot-Folder-Tools-UI.vue";
+import { getGlobalPort,setGlobalPort } from './scripts/portManager.js';
+
 
 export default {
   components: {
@@ -153,9 +156,11 @@ export default {
       pageLoaded: false,
       resizeState: "Expanded",
       activeHeader: "Default",
+      port: undefined,
     };
   },
   mounted() {
+    console.log("mounted")
     let vm = this;
     chrome.storage.sync.get(["preferences"], function (value) {
       if (value["preferences"] != undefined)
@@ -166,8 +171,9 @@ export default {
       const port = chrome.tabs.connect(tabs[0].id, {
         name: "frame",
       });
-
+      setGlobalPort(port);
       port.onMessage.addListener((msg) => {
+        console.log("message received", msg);
         if (msg.type === "RELOAD") {
           vm.reloadPage();
         }
@@ -270,19 +276,8 @@ export default {
       this.activeHeader = header;
     },
     resizeAssistant() {
-      let vm = this;
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        const port = chrome.tabs.connect(tabs[0].id, {
-          name: "frame",
-        });
-        port.postMessage({
-          type: "TOGGLE_SIZE",
-        });
-        port.onMessage.addListener((msg) => {
-          if (msg.type === "SET_SIZE_STATE") {
-            vm.resizeState = msg.state;
-          }
-        });
+      getGlobalPort().postMessage({
+        type: "TOGGLE_SIZE",
       });
     },
   },

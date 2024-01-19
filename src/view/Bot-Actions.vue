@@ -38,6 +38,7 @@
 </template>
 
 <script>
+import { getGlobalPort } from '../scripts/portManager.js';
 export default {
   props: {
     actionsArray: {
@@ -152,18 +153,10 @@ export default {
     clickActionByLineNumber(lineNumber) {
       if (lineNumber) {
         this.activeLineNumber = lineNumber;
-        chrome.tabs.query(
-          { active: true, currentWindow: true },
-          function (tabs) {
-            const port = chrome.tabs.connect(tabs[0].id, {
-              name: "frame",
-            });
-            port.postMessage({
-              type: "CLICK_LINE",
-              lineNo: lineNumber,
-            });
-          }
-        );
+        getGlobalPort().postMessage({
+          type: "CLICK_LINE",
+          lineNo: lineNumber,
+        });
       }
     },
     setActiveAction(action) {

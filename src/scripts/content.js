@@ -225,6 +225,7 @@ function getAssistantSize() {
     type: "SET_SIZE_STATE",
     state: state,
   });
+  console.log('set size state sent');
 }
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
@@ -619,9 +620,11 @@ function addTaskSavedObserver() {
         mutation.target.classList.contains("editor-page-saver") &&
         mutation.target["innerText"].trim() == "Saved"
       ) {
+        console.log("Saved, sending reload");
         framePort.postMessage({
           type: "RELOAD",
         });
+        break;
       }
     }
   };
@@ -644,6 +647,7 @@ function addFileSelectedObserver() {
   const fileCallback = (mutationList) => {
     for (const mutation of mutationList) {
       if (mutation.target.classList.contains("datatable-row")) {
+        console.log("file/folder selected");
         let selectedFiles = [];
         let selectedDataRows = document.getElementsByClassName(
           "datatable-row--selected"
@@ -904,7 +908,7 @@ function addInputOutputIcons() {
       item.insertBefore(downArrow, item.firstChild);
     } else if (variable.readOnly) {
       let equalsSymbol = document.createElement("span");
-      equalsSymbol.textContent = "🟰";
+      equalsSymbol.textContent = "⚓";
       equalsSymbol.classList.add("custom-variable-symbol");
       equalsSymbol.style = `position: absolute; left: 0; top: 50%; color: #3c5e83; font-size: 12px; transform: translateY(-50%);z-index:10;`;
       item.insertBefore(equalsSymbol, item.firstChild);

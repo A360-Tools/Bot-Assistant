@@ -35,6 +35,7 @@
 </template>
 
 <script>
+import { getGlobalPort } from '../scripts/portManager.js';
 export default {
   props: {
     variablesArray: {
@@ -151,19 +152,11 @@ export default {
 
     openVariableByName(variableName) {
       if (variableName) {
-        chrome.tabs.query(
-          { active: true, currentWindow: true },
-          function (tabs) {
-            const port = chrome.tabs.connect(tabs[0].id, {
-              name: "frame",
-            });
-            port.postMessage({
+        getGlobalPort().postMessage({
               type: "OPEN_VAR",
               varName: variableName,
             });
           }
-        );
-      }
     },
     setActiveVariable(variable) {
       this.activeVariable = variable;

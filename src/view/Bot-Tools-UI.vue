@@ -67,6 +67,64 @@
   </div>
 </template>
 
+
+<script>
+import LoadingPage from "./Loading-Page.vue";
+import { getGlobalPort } from '../scripts/portManager.js';
+export default {
+  components: {
+    LoadingPage,
+  },
+  data() {
+    return {
+      showList: true,
+      updateInProgress: false,
+      showToast: false,
+      saveMessage: null,
+      botContentJSONString: JSON.stringify(this.botContent, null, 2),
+    };
+  },
+  props: {
+    botContent: {
+      type: Object,
+      required: true,
+    },
+  },
+  methods: {
+    copyToClipboard() {
+      const textarea = document.querySelector(".assistant__list__group__textarea");
+      textarea.select();
+      document.execCommand("copy");
+    },
+    patchContent() {
+      let vm = this;
+      try {
+        const contentJSON = JSON.parse(vm.botContentJSONString);
+        vm.updateInProgress = true;
+        getGlobalPort().postMessage({
+          type: "PUT_CONTENT",
+          content: contentJSON,
+        });
+
+        getGlobalPort().onMessage.addListener((msg) => {
+          if (msg.type === "PUT_CONTENT_SUCCESS") {
+            vm.updateInProgress = false;
+            vm.saveMessage = "Success";
+            vm.showToast = true;
+            setTimeout(() => {
+              vm.showToast = false;
+              vm.reloadPage();
+            }, 1600);
+          }
+        });
+      } catch (error) {
+        console.error("Invalid JSON format:", error);
+      }
+    },
+  },
+};
+</script>
+
 <style>
 .assistant__list__group__textarea {
   width: 92%;
@@ -164,85 +222,3 @@
   }
 }
 </style>
-
-<script>
-import LoadingPage from "./Loading-Page.vue";
-export default {
-  components: {
-    LoadingPage,
-  },
-  data() {
-    return {
-      showList: true,
-      updateInProgress: false,
-      showToast: false,
-      saveMessage: null,
-      botContentJSONString: JSON.stringify(this.botContent, null, 2),
-    };
-  },
-  props: {
-    botContent: {
-      type: Object,
-      required: true,
-    },
-  },
-  methods: {
-    copyToClipboard() {
-      const textarea = document.querySelector(".assistant__list__group__textarea");
-      textarea.select();
-      document.execCommand("copy");
-    },
-    patchContent() {
-      let vm = this;
-      try {
-        const contentJSON = JSON.parse(vm.botContentJSONString);
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-          const port = chrome.tabs.connect(tabs[0].id, {
-            name: "frame",
-          });
-          vm.updateInProgress = true;
-          port.postMessage({
-            type: "PUT_CONTENT",
-            content: contentJSON,
-          });
-
-          port.onMessage.addListener((msg) => {
-            if (msg.type === "PUT_CONTENT_SUCCESS") {
-              vm.updateInProgress = false;
-              vm.saveMessage = "Success";
-              vm.showToast = true;
-              setTimeout(() => {
-                vm.showToast = false;
-                vm.reloadPage();
-              }, 1600);
-            }
-          });
-
-        });
-      } catch (error) {
-        console.error("Invalid JSON format:", error);
-      }
-    },
-    // expandNodes() {
-    //   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    //     const port = chrome.tabs.connect(tabs[0].id, {
-    //       name: "frame",
-    //     });
-    //     port.postMessage({
-    //       type: "EXPAND_NODES",
-    //     });
-    //   });
-    // },
-    // collapseNodes() {
-    //   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    //     const port = chrome.tabs.connect(tabs[0].id, {
-    //       name: "frame",
-    //     });
-    //     port.postMessage({
-    //       type: "COLLAPSE_NODES",
-    //     });
-    //   });
-    // },
-  },
-};
-</script>

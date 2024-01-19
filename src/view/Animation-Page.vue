@@ -9,6 +9,7 @@
             </div>
             <div class="contant_box_404">
               <h3 class="h3 prevent-select">Unsupported Page!</h3>
+              <h5>Supported Pages: Bots and Private folders</h5>
             </div>
           </div>
         </div>
@@ -481,5 +482,6 @@ p {
 .container:after,
 .row:after {
   clear: both;
-}</style>
+}
+</style>
 

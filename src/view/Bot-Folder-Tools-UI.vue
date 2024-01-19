@@ -49,6 +49,7 @@
   
 <script>
 import LoadingPage from "./Loading-Page.vue";
+import { getGlobalPort } from '../scripts/portManager.js';
 export default {
     components: {
         LoadingPage,
@@ -70,23 +71,18 @@ export default {
     },
     mounted() {
         let vm = this;
-        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-            const port = chrome.tabs.connect(tabs[0].id, {
-                name: "frame",
-            });
-            port.onMessage.addListener((msg) => {
-                if (msg.type === "DATA_ROW_CHANGE" && msg.data != undefined) {
-                    vm.checkedItemsId = msg.data;
-                }
-                if (msg.type === "SET_ROW_ITEMS" && msg.data != undefined) {
-                    vm.checkedItemsId = msg.data;
-                }
-            });
 
-            port.postMessage({
-                type: "GET_ROW_ITEMS",
-            });
+        getGlobalPort().onMessage.addListener((msg) => {
+            if (msg.type === "DATA_ROW_CHANGE" && msg.data != undefined) {
+                vm.checkedItemsId = msg.data;
+            }
+            if (msg.type === "SET_ROW_ITEMS" && msg.data != undefined) {
+                vm.checkedItemsId = msg.data;
+            }
+        });
 
+        getGlobalPort().postMessage({
+            type: "GET_ROW_ITEMS",
         });
     },
     methods: {
@@ -96,29 +92,22 @@ export default {
 
         updatePackageVersions() {
             let vm = this;
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                const port = chrome.tabs.connect(tabs[0].id, {
-                    name: "frame",
-                });
-
-                const fileIDs = vm.selectedEditableTaskFiles.map(file => file.id);
-                port.postMessage({
-                    type: "UPDATE_PACKAGES",
-                    fileIds: fileIDs
-                });
-                vm.updateInProgress = true;
-                port.onMessage.addListener((msg) => {
-                    if (msg.type === "PACKAGES_UPDATED") {
-                        vm.updateInProgress = false;
-                        vm.saveMessage = "Success";
-                        vm.showToast = true;
-                        setTimeout(() => {
-                            vm.showToast = false;
-                            vm.reloadPage();
-                        }, 1600);
-                    }
-                });
-
+            const fileIDs = vm.selectedEditableTaskFiles.map(file => file.id);
+            getGlobalPort().postMessage({
+                type: "UPDATE_PACKAGES",
+                fileIds: fileIDs
+            });
+            vm.updateInProgress = true;
+            getGlobalPort().onMessage.addListener((msg) => {
+                if (msg.type === "PACKAGES_UPDATED") {
+                    vm.updateInProgress = false;
+                    vm.saveMessage = "Success";
+                    vm.showToast = true;
+                    setTimeout(() => {
+                        vm.showToast = false;
+                        vm.reloadPage();
+                    }, 1600);
+                }
             });
         },
 
