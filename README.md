@@ -1,6 +1,7 @@
 # [Automation Anywhere A360 Assistant 🤖](https://chrome.google.com/webstore/detail/bot-assistant/bdnogmeijaanbgpnmbhlhmkfcbaoejcp)
 <B>Bot Assistant helps ensure best practices are being followed for A360 bots by quickly providing an overview of issues in real-time.</B>
 
+- Adds visual indicators for variable types, eliminating the need for additional clicks to verify information.
 - Allows developers to proactively make changes before review. 💻
 - Allows reviewers to quickly get a list of issues without going line by line. 👀
 - Allows quick download of control room files without export for quick edit (e.g., .xlsx config files | select items > copy > click on the file name).
