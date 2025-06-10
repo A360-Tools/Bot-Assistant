@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 300px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      color: #1f2937;
+    }
+    p {
+      margin: 0 0 16px;
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn:hover {
+      background: #1d4ed8;
+    }
+    .note {
+      margin-top: 12px;
+      padding: 8px;
+      background: #f3f4f6;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <h2>Bot Assistant</h2>
+  <p>Click the button below to open the Bot Assistant side panel.</p>
+  <button class="btn" id="openPanel">Open Side Panel</button>
+  <div class="note">
+    Note: The side panel will open on the right side of your browser window.
+  </div>
+  
+  <script type="module" src="./popup/main.ts"></script>
+</body>
+</html>

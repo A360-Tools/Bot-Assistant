@@ -1,0 +1,32 @@
+{
+  "name": "Bot Assistant",
+  "version": "3.0.2",
+  "description": "Automation Anywhere A360 Assistant",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "compile": "tsc --noEmit"
+  },
+  "keywords": ["automation anywhere","automation 360", "bot assistant", "automation-anywhere", "a360"],
+  "author": "Bot Assistant Team",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/chrome": "^0.0.326",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/tsconfig": "^0.7.0",
+    "@wxt-dev/module-vue": "^1.0.2",
+    "typescript": "^5.8.3",
+    "vue": "^3.5.16",
+    "wxt": "^0.20.7"
+  },
+  "dependencies": {
+    "lucide-vue-next": "^0.513.0",
+    "vue-router": "^4.5.1"
+  }
+}
