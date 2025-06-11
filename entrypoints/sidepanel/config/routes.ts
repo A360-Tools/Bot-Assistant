@@ -117,6 +117,21 @@ export const routeConfigs: RouteConfig[] = [
         action: 'VIEW_ATTRIBUTES'
       }
     ]
+  },
+  {
+    paths: [/#\/bots\/packages\/versions/],
+    type: 'packages',
+    name: 'Packages',
+    icon: 'Package',
+    tools: [
+      {
+        id: 'package-download',
+        name: 'Package Download',
+        icon: 'Download',
+        description: 'Download package JAR files',
+        action: 'PACKAGE_DOWNLOAD'
+      }
+    ]
   }
 ];
 

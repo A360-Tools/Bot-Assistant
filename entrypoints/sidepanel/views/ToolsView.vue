@@ -24,6 +24,10 @@
       <ContentModificationView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
+    <div v-else-if="showPackageDownload">
+      <PackageDownloadView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+    </div>
+    
     <div v-else-if="availableTools.length > 0" class="tools-grid">
       <ToolCard
         v-for="tool in availableTools"
@@ -58,10 +62,11 @@ import CopyFilesView from './CopyFilesView.vue';
 import BestPracticesView from './BestPracticesView.vue';
 import CredentialsView from './CredentialsView.vue';
 import ContentModificationView from './ContentModificationView.vue';
+import PackageDownloadView from './PackageDownloadView.vue';
 import type { Tool } from '../config/routes';
 import { usePageContext } from '../composables/usePageContext';
 import { useTabState } from '../composables/useTabState';
-import { getDefaultToolForPageType } from '../utils/storage';
+import { getDefaultToolForPageType, TOOL_PREFERENCE_VALUES } from '../utils/storage';
 import { SUPPORTED_SECTIONS } from '../utils/navigationHelp';
 
 interface Props {
@@ -118,6 +123,10 @@ const showViewAttributes = computed(() => {
 
 const showContentModification = computed(() => {
   return activeToolId.value === 'content-modification' && props.availableTools.some(t => t.id === 'content-modification');
+});
+
+const showPackageDownload = computed(() => {
+  return activeToolId.value === 'package-download' && props.availableTools.some(t => t.id === 'package-download');
 });
 
 const supportedSections = computed(() => SUPPORTED_SECTIONS);
@@ -181,16 +190,22 @@ watch(() => props.availableTools, (newTools, oldTools) => {
   // Auto-launch if no tool is active
   if (!activeToolId.value && newTools.length > 0) {
     // Check for user's default preference
-    getDefaultToolForPageType(pageType.value).then(defaultToolId => {
-      if (defaultToolId && newTools.some(t => t.id === defaultToolId)) {
-        const defaultTool = newTools.find(t => t.id === defaultToolId)!;
-        // Auto-launching preferred default tool
+    getDefaultToolForPageType(pageType.value).then(preference => {
+      if (!preference || preference === TOOL_PREFERENCE_VALUES.AUTO_SINGLE) {
+        // Auto-single mode: launch if only one tool available
+        if (newTools.length === 1) {
+          const singleTool = newTools[0];
+          // Auto-launching single tool
+          handleToolClick(singleTool);
+        }
+      } else if (preference === TOOL_PREFERENCE_VALUES.ALWAYS_SHOW) {
+        // Always show selection - do nothing
+        return;
+      } else if (newTools.some(t => t.id === preference)) {
+        // Specific tool preference
+        const defaultTool = newTools.find(t => t.id === preference)!;
+        // Auto-launching preferred tool
         handleToolClick(defaultTool);
-      } else if (newTools.length === 1) {
-        // If no preference set, but only one tool available, auto-launch it
-        const singleTool = newTools[0];
-        // Auto-launching single tool
-        handleToolClick(singleTool);
       }
     });
   }
@@ -211,6 +226,8 @@ const handleToolClick = (tool: Tool) => {
     activeToolId.value = 'view-attributes';
   } else if (tool.id === 'content-modification') {
     activeToolId.value = 'content-modification';
+  } else if (tool.id === 'package-download') {
+    activeToolId.value = 'package-download';
   } else {
     // For other tools, send message to background
     chrome.runtime.sendMessage({
@@ -224,16 +241,22 @@ const handleToolClick = (tool: Tool) => {
 onMounted(async () => {
   // If no tool is active, check for auto-launch
   if (!activeToolId.value) {
-    // First check for user's default preference
-    const defaultToolId = await getDefaultToolForPageType(pageType.value);
-    if (defaultToolId && props.availableTools.some(t => t.id === defaultToolId)) {
-      const defaultTool = props.availableTools.find(t => t.id === defaultToolId)!;
+    const preference = await getDefaultToolForPageType(pageType.value);
+    
+    if (!preference || preference === TOOL_PREFERENCE_VALUES.AUTO_SINGLE) {
+      // Auto-single mode: launch if only one tool available
+      if (props.availableTools.length === 1) {
+        const singleTool = props.availableTools[0];
+        // Auto-launching single tool on mount
+        handleToolClick(singleTool);
+      }
+    } else if (preference === TOOL_PREFERENCE_VALUES.ALWAYS_SHOW) {
+      // Always show selection - do nothing
+      return;
+    } else if (props.availableTools.some(t => t.id === preference)) {
+      // Specific tool preference
+      const defaultTool = props.availableTools.find(t => t.id === preference)!;
       handleToolClick(defaultTool);
-    } else if (props.availableTools.length === 1) {
-      // If no preference set, but only one tool available, auto-launch it
-      const singleTool = props.availableTools[0];
-      // Auto-launching single tool on mount
-      handleToolClick(singleTool);
     }
   }
 });

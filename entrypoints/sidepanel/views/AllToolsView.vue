@@ -19,6 +19,11 @@
           <h3>{{ category.name }}</h3>
         </div>
         
+        <div v-if="getAvailabilityText(category.type)" class="availability-info">
+          <Navigation :size="14" />
+          <span>{{ getAvailabilityText(category.type) }}</span>
+        </div>
+        
         <div class="category-tools">
           <div
             v-for="tool in category.tools"
@@ -42,7 +47,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Info } from 'lucide-vue-next';
+import { Info, Navigation } from 'lucide-vue-next';
 import * as icons from 'lucide-vue-next';
 import { routeConfigs } from '../config/routes';
 import ToolHeader from '../components/ToolHeader.vue';
@@ -64,6 +69,19 @@ const getCategoryIcon = (iconName: string) => {
 const getToolIcon = (iconName: string) => {
   // @ts-ignore - Dynamic icon loading
   return icons[iconName] || icons.Wrench;
+};
+
+const getAvailabilityText = (type: string): string => {
+  const availabilityMap: Record<string, string> = {
+    'privateBot': 'Navigate to Control Room > Automation > Private tab > Open any bot',
+    'publicBot': 'Navigate to Control Room > Automation > Public tab > Open any bot',
+    'credentials': 'Navigate to Control Room > Manage > Credentials > Open any credential',
+    'privateFolder': 'Navigate to Control Room > Automation > Private tab > Open any folder',
+    'publicFolder': 'Navigate to Control Room > Automation > Public tab > Open any folder',
+    'packages': 'Navigate to Control Room > Manage > Packages'
+  };
+  
+  return availabilityMap[type] || '';
 };
 </script>
 
@@ -124,6 +142,23 @@ const getToolIcon = (iconName: string) => {
   font-size: 1rem;
   font-weight: 600;
   flex: 1;
+}
+
+.availability-info {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: #f0f9ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: #1e40af;
+}
+
+.availability-info span {
+  line-height: 1.4;
 }
 
 .category-tools {

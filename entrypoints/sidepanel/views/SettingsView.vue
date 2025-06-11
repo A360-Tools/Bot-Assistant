@@ -16,49 +16,63 @@
             <h3>Default Tool Preferences</h3>
           </div>
           <div class="card-content">
-            <p class="section-description">Choose your preferred tool to launch automatically for each page type. If no preference is set and only one tool is available, it will launch automatically.</p>
+            <p class="section-description">Choose your preferred tool behavior for each page type. You can auto-select when only one tool is available, always show the selection menu, or always use a specific tool.</p>
             
             <div class="default-tools-grid">
               <div class="form-field">
                 <label>Private Bot Pages</label>
                 <select v-model="defaultTools.privateBot">
-                  <option value="">No default (show selection)</option>
-                  <option value="best-practices">Best Practices</option>
-                  <option value="content-modification">Content Modification</option>
+                  <option value="auto-single">Auto-select when single</option>
+                  <option value="always-show">Always show selection</option>
+                  <option value="best-practices">Always use Best Practices</option>
+                  <option value="content-modification">Always use Content Modification</option>
                 </select>
               </div>
               
               <div class="form-field">
                 <label>Public Bot Pages</label>
                 <select v-model="defaultTools.publicBot">
-                  <option value="">No default (show selection)</option>
-                  <option value="best-practices">Best Practices</option>
+                  <option value="auto-single">Auto-select when single</option>
+                  <option value="always-show">Always show selection</option>
+                  <option value="best-practices">Always use Best Practices</option>
                 </select>
               </div>
               
               <div class="form-field">
                 <label>Private Folder Pages</label>
                 <select v-model="defaultTools.privateFolder">
-                  <option value="">No default (show selection)</option>
-                  <option value="download-files">Download Files</option>
-                  <option value="update-packages">Update Packages</option>
-                  <option value="copy-files">Copy Files</option>
+                  <option value="auto-single">Auto-select when single</option>
+                  <option value="always-show">Always show selection</option>
+                  <option value="download-files">Always use Download Files</option>
+                  <option value="update-packages">Always use Update Packages</option>
+                  <option value="copy-files">Always use Copy Files</option>
                 </select>
               </div>
               
               <div class="form-field">
                 <label>Public Folder Pages</label>
                 <select v-model="defaultTools.publicFolder">
-                  <option value="">No default (show selection)</option>
-                  <option value="download-files">Download Files</option>
+                  <option value="auto-single">Auto-select when single</option>
+                  <option value="always-show">Always show selection</option>
+                  <option value="download-files">Always use Download Files</option>
                 </select>
               </div>
               
               <div class="form-field">
                 <label>Credentials Pages</label>
                 <select v-model="defaultTools.credentials">
-                  <option value="">No default (show selection)</option>
-                  <option value="view-attributes">View Attributes</option>
+                  <option value="auto-single">Auto-select when single</option>
+                  <option value="always-show">Always show selection</option>
+                  <option value="view-attributes">Always use View Attributes</option>
+                </select>
+              </div>
+              
+              <div class="form-field">
+                <label>Packages Pages</label>
+                <select v-model="defaultTools.packages">
+                  <option value="auto-single">Auto-select when single</option>
+                  <option value="always-show">Always show selection</option>
+                  <option value="package-download">Always use Package Download</option>
                 </select>
               </div>
             </div>
@@ -284,7 +298,8 @@ import {
   type BestPracticesConfig,
   getDefaultToolPreferences,
   saveDefaultToolPreferences,
-  type DefaultToolPreferences
+  type DefaultToolPreferences,
+  TOOL_PREFERENCE_VALUES
 } from '../utils/storage';
 
 // State
@@ -304,7 +319,17 @@ const hasErrors = computed(() => {
 // Load configuration
 async function loadConfiguration() {
   config.value = await getConfig();
-  defaultTools.value = await getDefaultToolPreferences();
+  const prefs = await getDefaultToolPreferences();
+  
+  // Map existing empty strings to 'auto-single' for backward compatibility
+  defaultTools.value = {
+    privateBot: prefs.privateBot || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    publicBot: prefs.publicBot || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    privateFolder: prefs.privateFolder || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    publicFolder: prefs.publicFolder || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    credentials: prefs.credentials || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    packages: prefs.packages || TOOL_PREFERENCE_VALUES.AUTO_SINGLE
+  };
 }
 
 // Validate regex patterns
@@ -347,7 +372,14 @@ function resetToDefaults() {
 async function confirmReset() {
   showResetModal.value = false;
   await resetConfig();
-  await saveDefaultToolPreferences({});
+  await saveDefaultToolPreferences({
+    privateBot: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    publicBot: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    privateFolder: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    publicFolder: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    credentials: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
+    packages: TOOL_PREFERENCE_VALUES.AUTO_SINGLE
+  });
   await loadConfiguration();
 }
 

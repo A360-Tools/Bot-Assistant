@@ -1,11 +1,18 @@
 // Configuration storage utilities for best practices settings
 
+// Special values for tool preferences
+export const TOOL_PREFERENCE_VALUES = {
+  AUTO_SINGLE: 'auto-single', // Auto-select when only one tool available
+  ALWAYS_SHOW: 'always-show'  // Always show selection
+} as const;
+
 export interface DefaultToolPreferences {
   privateBot?: string;
   publicBot?: string;
   privateFolder?: string;
   publicFolder?: string;
   credentials?: string;
+  packages?: string;
 }
 
 export interface BestPracticesConfig {

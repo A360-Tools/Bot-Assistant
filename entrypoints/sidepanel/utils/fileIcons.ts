@@ -114,6 +114,10 @@ const fileTypeMap: Record<string, FileTypeConfig> = {
     icon: FileArchive,
     color: '#6366f1'
   },
+  'application/java-archive': {
+    icon: Package,
+    color: '#dc2626'
+  },
   
   // Code files
   'text/javascript': {
