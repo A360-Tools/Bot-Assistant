@@ -28,7 +28,7 @@ A powerful Chrome extension for Automation Anywhere Control Room that enhances y
 ## Installation
 
 ### From Chrome Web Store
-Coming soon...
+https://chrome.google.com/webstore/detail/bot-assistant/bdnogmeijaanbgpnmbhlhmkfcbaoejcp
 
 ### Manual Installation
 1. Download the latest release from the [Releases](https://github.com/A360-Tools/Bot-Assistant/releases) page
