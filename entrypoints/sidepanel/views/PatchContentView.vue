@@ -1,7 +1,7 @@
 <template>
   <div class="patch-content-view">
     <ToolHeader
-      title="Patch Content"
+      title="Patch Files"
       :showBack="true"
       :showRefresh="true"
       :refreshing="loading"

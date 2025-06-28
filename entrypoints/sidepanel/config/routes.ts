@@ -88,7 +88,7 @@ export const routeConfigs: RouteConfig[] = [
       },
       {
         id: 'patch-content',
-        name: 'Patch Content',
+        name: 'Patch Files',
         icon: 'Code',
         description: 'Find and replace text in selected bot files',
         action: 'PATCH_CONTENT'
