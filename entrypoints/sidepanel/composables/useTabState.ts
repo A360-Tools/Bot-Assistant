@@ -1,21 +1,7 @@
-import { ref, watch, computed } from 'vue';
-import { usePageContext } from './usePageContext';
+import { ref } from 'vue';
 
-// Store state for each tab across all windows
-const tabStates = ref<Map<string, any>>(new Map());
-
-export function useTabState<T>(defaultState: T) {
-  const { currentTab } = usePageContext();
-  
-  // Create unique key for tab that includes window ID
-  const getTabKey = () => {
-    if (!currentTab.value) return 'unknown';
-    return `${currentTab.value.windowId}-${currentTab.value.id}`;
-  };
-  
-  // Get current tab key
-  const currentTabKey = computed(() => getTabKey());
-  
+// Simple state management - no tab persistence
+export function useTabState<T>(defaultState: T, namespace?: string) {
   // Deep clone function that handles Maps and Sets
   const deepClone = (obj: any): any => {
     if (obj === null || typeof obj !== 'object') return obj;
@@ -32,72 +18,24 @@ export function useTabState<T>(defaultState: T) {
     }
     return clonedObj;
   };
-
-  // Get or create state for current tab
-  const getTabState = () => {
-    const key = currentTabKey.value;
-    if (key === 'unknown') return deepClone(defaultState);
-    
-    if (!tabStates.value.has(key)) {
-      tabStates.value.set(key, deepClone(defaultState));
-    }
-    
-    return tabStates.value.get(key);
-  };
   
-  // Create reactive state for current tab
-  const state = ref<T>(getTabState());
-  
-  // Update state when tab changes
-  watch(currentTabKey, (newKey, oldKey) => {
-    // Save current state for old tab
-    if (oldKey !== 'unknown' && oldKey !== newKey) {
-      tabStates.value.set(oldKey, deepClone(state.value));
-    }
-    
-    // Load state for new tab
-    state.value = getTabState();
-  }, { immediate: true });
-  
-  // Save state whenever it changes
-  watch(state, (newState) => {
-    if (currentTabKey.value !== 'unknown') {
-      tabStates.value.set(currentTabKey.value, deepClone(newState));
-    }
-  }, { deep: true });
-  
-  // Cleanup old tab states (keep only last 20 tabs)
-  watch(tabStates, () => {
-    if (tabStates.value.size > 20) {
-      const entries = Array.from(tabStates.value.entries());
-      const toRemove = entries.slice(0, entries.length - 20);
-      toRemove.forEach(([key]) => tabStates.value.delete(key));
-    }
-  });
+  // Create simple reactive state with default values
+  const state = ref<T>(deepClone(defaultState));
   
   return state;
 }
 
-// Clear state for a specific tab
-export function clearTabState(windowId: number, tabId: number) {
-  const key = `${windowId}-${tabId}`;
-  tabStates.value.delete(key);
+// These functions are no longer needed but kept for compatibility
+export function clearTabState(windowId: number, tabId: number, namespace?: string) {
+  // No-op - state is not persisted
 }
 
-// Clear all tab states
-export function clearAllTabStates() {
-  tabStates.value.clear();
+export function clearAllTabStates(namespace?: string) {
+  // No-op - state is not persisted
 }
 
-// Clear states for a specific window
-export function clearWindowTabStates(windowId: number) {
-  const keysToDelete: string[] = [];
-  tabStates.value.forEach((_, key) => {
-    if (key.startsWith(`${windowId}-`)) {
-      keysToDelete.push(key);
-    }
-  });
-  keysToDelete.forEach(key => tabStates.value.delete(key));
+export function clearWindowTabStates(windowId: number, namespace?: string) {
+  // No-op - state is not persisted
 }
 
 // Send message to content script

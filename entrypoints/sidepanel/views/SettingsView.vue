@@ -46,6 +46,7 @@
                   <option value="download-files">Always use Download Files</option>
                   <option value="update-packages">Always use Update Packages</option>
                   <option value="copy-files">Always use Copy Files</option>
+                  <option value="patch-content">Always use Patch Content</option>
                 </select>
               </div>
               

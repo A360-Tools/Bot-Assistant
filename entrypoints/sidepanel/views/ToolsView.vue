@@ -28,6 +28,10 @@
       <PackageDownloadView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
+    <div v-else-if="showPatchContent">
+      <PatchContentView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+    </div>
+    
     <div v-else-if="availableTools.length > 0" class="tools-grid">
       <ToolCard
         v-for="tool in availableTools"
@@ -63,9 +67,9 @@ import BestPracticesView from './BestPracticesView.vue';
 import CredentialsView from './CredentialsView.vue';
 import ContentModificationView from './ContentModificationView.vue';
 import PackageDownloadView from './PackageDownloadView.vue';
+import PatchContentView from './PatchContentView.vue';
 import type { Tool } from '../config/routes';
 import { usePageContext } from '../composables/usePageContext';
-import { useTabState } from '../composables/useTabState';
 import { getDefaultToolForPageType, TOOL_PREFERENCE_VALUES } from '../utils/storage';
 import { SUPPORTED_SECTIONS } from '../utils/navigationHelp';
 
@@ -77,26 +81,8 @@ interface Props {
 const props = defineProps<Props>();
 const { currentUrl, pageType } = usePageContext();
 
-// Use per-tab state for active tool
-const tabState = useTabState({
-  activeToolId: null as string | null
-});
-
-const activeToolId = computed({
-  get: () => {
-    // Check if the stored tool is still available
-    const storedTool = tabState.value.activeToolId;
-    if (storedTool && !props.availableTools.some(t => t.id === storedTool)) {
-      // Tool is no longer available, clear it
-      tabState.value.activeToolId = null;
-      return null;
-    }
-    return storedTool;
-  },
-  set: (value) => {
-    tabState.value.activeToolId = value;
-  }
-});
+// Simple state - no tab persistence
+const activeToolId = ref<string | null>(null);
 
 // Add a force refresh key
 const toolKey = ref(0);
@@ -129,60 +115,45 @@ const showPackageDownload = computed(() => {
   return activeToolId.value === 'package-download' && props.availableTools.some(t => t.id === 'package-download');
 });
 
+const showPatchContent = computed(() => {
+  return activeToolId.value === 'patch-content' && props.availableTools.some(t => t.id === 'patch-content');
+});
+
 const supportedSections = computed(() => SUPPORTED_SECTIONS);
 
-// Store the last URL for this tab
+// Store the last URL
 const lastUrl = ref(currentUrl.value);
 
-// Handle URL changes and tool availability
-watch(() => currentUrl.value, (newUrl) => {
-  // Skip if URL hasn't actually changed
-  if (newUrl === lastUrl.value) return;
-  
-  // Update last URL
-  lastUrl.value = newUrl;
-  
-  // Check if the active tool is still available
-  if (activeToolId.value) {
-    const toolStillAvailable = props.availableTools.some(t => t.id === activeToolId.value);
-    
-    if (!toolStillAvailable) {
-      // Tool is no longer available, go back to tool selection
-      activeToolId.value = null;
-    }
-    // If tool is still available, the child component will handle refresh via its own URL watcher
+// Handle URL changes - always reset tool on URL change
+watch(() => currentUrl.value, (newUrl, oldUrl) => {
+  if (newUrl !== oldUrl) {
+    console.log('[ToolsView] URL changed, resetting tool selection');
+    activeToolId.value = null;
+    lastUrl.value = newUrl;
+    toolKey.value++;
   }
 });
 
-// Watch for reset trigger from parent (handles case when we're not the active tab)
+// Watch for reset trigger from parent - always reset
 watch(() => props.resetTrigger, (newVal, oldVal) => {
-  // Skip initial trigger
-  if (oldVal === undefined) return;
-  
-  // Force refresh the tool key to remount components
-  toolKey.value++;
-  
-  // Check if the active tool is still available
-  if (activeToolId.value) {
-    const toolStillAvailable = props.availableTools.some(t => t.id === activeToolId.value);
-    
-    if (!toolStillAvailable) {
-      // Tool is no longer available, go back to tool selection
-      // Tool is no longer available, resetting...
-      activeToolId.value = null;
-      // Force update of the tab state
-      tabState.value.activeToolId = null;
-    }
+  if (oldVal !== undefined) {
+    console.log('[ToolsView] Reset trigger, clearing tool selection');
+    activeToolId.value = null;
+    toolKey.value++;
   }
 });
 
 // Also watch for when we navigate back to this tab
 watch(() => props.availableTools, (newTools, oldTools) => {
+  // Skip if we're just switching tabs (tools haven't actually changed)
+  if (oldTools && JSON.stringify(newTools) === JSON.stringify(oldTools)) {
+    return;
+  }
+  
   // If we have an active tool but it's not in the available tools, reset
   if (activeToolId.value && !newTools.some(t => t.id === activeToolId.value)) {
-    // Active tool no longer in available tools, resetting...
+    console.log('[ToolsView] Active tool no longer in available tools, resetting...');
     activeToolId.value = null;
-    tabState.value.activeToolId = null;
     // Increment key to force remount
     toolKey.value++;
   }
@@ -212,22 +183,16 @@ watch(() => props.availableTools, (newTools, oldTools) => {
 }, { immediate: true, deep: true });
 
 const handleToolClick = (tool: Tool) => {
-  // Tool clicked
+  console.log('[ToolsView] Tool clicked:', tool.id);
   
-  if (tool.id === 'download-files') {
-    activeToolId.value = 'download-files';
-  } else if (tool.id === 'update-packages') {
-    activeToolId.value = 'update-packages';
-  } else if (tool.id === 'copy-files') {
-    activeToolId.value = 'copy-files';
-  } else if (tool.id === 'best-practices') {
-    activeToolId.value = 'best-practices';
-  } else if (tool.id === 'view-attributes') {
-    activeToolId.value = 'view-attributes';
-  } else if (tool.id === 'content-modification') {
-    activeToolId.value = 'content-modification';
-  } else if (tool.id === 'package-download') {
-    activeToolId.value = 'package-download';
+  const validToolIds = [
+    'download-files', 'update-packages', 'copy-files', 
+    'best-practices', 'view-attributes', 'content-modification',
+    'package-download', 'patch-content'
+  ];
+  
+  if (validToolIds.includes(tool.id)) {
+    activeToolId.value = tool.id;
   } else {
     // For other tools, send message to background
     chrome.runtime.sendMessage({
@@ -239,25 +204,27 @@ const handleToolClick = (tool: Tool) => {
 
 // Check for auto-launch on mount
 onMounted(async () => {
-  // If no tool is active, check for auto-launch
-  if (!activeToolId.value) {
-    const preference = await getDefaultToolForPageType(pageType.value);
-    
-    if (!preference || preference === TOOL_PREFERENCE_VALUES.AUTO_SINGLE) {
-      // Auto-single mode: launch if only one tool available
-      if (props.availableTools.length === 1) {
-        const singleTool = props.availableTools[0];
-        // Auto-launching single tool on mount
-        handleToolClick(singleTool);
-      }
-    } else if (preference === TOOL_PREFERENCE_VALUES.ALWAYS_SHOW) {
-      // Always show selection - do nothing
-      return;
-    } else if (props.availableTools.some(t => t.id === preference)) {
-      // Specific tool preference
-      const defaultTool = props.availableTools.find(t => t.id === preference)!;
-      handleToolClick(defaultTool);
+  console.log('[ToolsView] Component mounted');
+  lastUrl.value = currentUrl.value;
+  
+  // Check for auto-launch
+  const preference = await getDefaultToolForPageType(pageType.value);
+  
+  if (!preference || preference === TOOL_PREFERENCE_VALUES.AUTO_SINGLE) {
+    // Auto-single mode: launch if only one tool available
+    if (props.availableTools.length === 1) {
+      const singleTool = props.availableTools[0];
+      console.log('[ToolsView] Auto-launching single tool:', singleTool.id);
+      handleToolClick(singleTool);
     }
+  } else if (preference === TOOL_PREFERENCE_VALUES.ALWAYS_SHOW) {
+    // Always show selection - do nothing
+    return;
+  } else if (props.availableTools.some(t => t.id === preference)) {
+    // Specific tool preference
+    const defaultTool = props.availableTools.find(t => t.id === preference)!;
+    console.log('[ToolsView] Auto-launching preferred tool:', defaultTool.id);
+    handleToolClick(defaultTool);
   }
 });
 </script>

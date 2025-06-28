@@ -85,6 +85,13 @@ export const routeConfigs: RouteConfig[] = [
         icon: 'Copy',
         description: 'Copy files to another folder',
         action: 'COPY_FILES'
+      },
+      {
+        id: 'patch-content',
+        name: 'Patch Content',
+        icon: 'Code',
+        description: 'Find and replace text in selected bot files',
+        action: 'PATCH_CONTENT'
       }
     ]
   },

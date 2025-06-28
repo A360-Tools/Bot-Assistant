@@ -185,10 +185,10 @@ class ApiService {
         (response) => {
           if (chrome.runtime.lastError) {
             const message = chrome.runtime.lastError.message;
-            if (message.includes('Receiving end does not exist')) {
+            if (message && message.includes('Receiving end does not exist')) {
               reject(new Error(ERROR_MESSAGES.CONTENT_SCRIPT_NOT_READY));
             } else {
-              reject(new Error(message));
+              reject(new Error(message || 'Unknown runtime error'));
             }
             return;
           }

@@ -63,13 +63,15 @@ import SettingsView from './views/SettingsView.vue';
 
 const { isConnected, currentUrl, currentRouteConfig, availableTools } = usePageContext();
 
-// Create a reactive signal to reset tools when URL changes to unsupported page
+// Create a reactive signal to reset tools when URL changes
 const toolsResetTrigger = ref(0);
 
-// Watch for URL changes and check if active tool should be reset
-watch(currentUrl, () => {
-  // Trigger reset by incrementing the counter
-  toolsResetTrigger.value++;
+// Watch for URL changes and always trigger reset
+watch(currentUrl, (newUrl, oldUrl) => {
+  if (newUrl !== oldUrl) {
+    console.log('[App.vue] URL changed, triggering reset');
+    toolsResetTrigger.value++;
+  }
 });
 
 // Watch for connection status changes
@@ -84,10 +86,7 @@ watch(isConnected, (newValue, oldValue) => {
 
 // Handle tab changes
 const handleTabChange = (tabId: string) => {
-  if (tabId === 'tools') {
-    // When switching to tools tab, trigger a reset check
-    toolsResetTrigger.value++;
-  }
+  // Tab changes in the sidepanel don't affect tool selection
 };
 
 const tabs = [

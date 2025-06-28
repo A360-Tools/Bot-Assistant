@@ -78,13 +78,13 @@ export function usePageContext() {
       // First, get the current window if we don't have it
       if (!windowId.value) {
         const currentWindow = await chrome.windows.getCurrent();
-        windowId.value = currentWindow.id;
+        windowId.value = currentWindow.id ?? null;
       }
       
       // Get the active tab in the specific window
       const tabs = await chrome.tabs.query({ 
         active: true, 
-        windowId: windowId.value 
+        windowId: windowId.value ?? undefined 
       });
       const tab = tabs[0];
       
@@ -117,6 +117,12 @@ export function usePageContext() {
     // Only handle updates for tabs in our window
     if (windowId.value && tab.windowId === windowId.value && tab.active) {
       if (changeInfo.url) {
+        console.log('[usePageContext] Tab URL updated:', {
+          tabId,
+          oldUrl: currentUrl.value,
+          newUrl: changeInfo.url,
+          urlChanged: currentUrl.value !== changeInfo.url
+        });
         currentUrl.value = changeInfo.url;
         currentTab.value = tab;
       }
@@ -134,8 +140,20 @@ export function usePageContext() {
       try {
         const tab = await chrome.tabs.get(activeInfo.tabId);
         if (tab.url) {
-          currentUrl.value = tab.url;
+          const urlChanged = currentUrl.value !== tab.url;
+          console.log('[usePageContext] Tab activated:', {
+            tabId: activeInfo.tabId,
+            oldUrl: currentUrl.value,
+            newUrl: tab.url,
+            urlChanged
+          });
+          
+          // Only update if URL actually changed to avoid unnecessary reactivity
+          if (urlChanged) {
+            currentUrl.value = tab.url;
+          }
           currentTab.value = tab;
+          
           // Check connection status when tab is activated
           await updateCurrentTab();
         }
