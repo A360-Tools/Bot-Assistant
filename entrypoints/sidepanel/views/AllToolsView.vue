@@ -1,11 +1,5 @@
 <template>
   <div class="all-tools-view">
-    <ToolHeader 
-      title="All Tools" 
-      :show-back="false"
-      :show-refresh="false"
-    />
-    
     <div class="content">
       <div class="info-message">
         <Info :size="16" />
@@ -50,7 +44,6 @@ import { computed } from 'vue';
 import { Info, Navigation } from 'lucide-vue-next';
 import * as icons from 'lucide-vue-next';
 import { routeConfigs } from '../config/routes';
-import ToolHeader from '../components/ToolHeader.vue';
 
 const allCategories = computed(() => {
   return routeConfigs.map(config => ({

@@ -1,11 +1,5 @@
 <template>
   <div class="settings-view">
-    <ToolHeader 
-      title="Best Practices Settings" 
-      :show-back="false"
-      :show-refresh="false"
-    />
-    
     <div class="content">
       <!-- Configuration Sections -->
       <div class="config-sections">
@@ -46,7 +40,7 @@
                   <option value="download-files">Always use Download Files</option>
                   <option value="update-packages">Always use Update Packages</option>
                   <option value="copy-files">Always use Copy Files</option>
-                  <option value="patch-content">Always use Patch Content</option>
+                  <option value="patch-content">Always use Patch Files</option>
                 </select>
               </div>
               
@@ -80,8 +74,18 @@
           </div>
         </div>
         
-        <!-- Best Practices Section -->
-        <div class="card">
+        <!-- Best Practices Tool Settings Group -->
+        <div class="settings-group">
+          <div class="group-header">
+            <CheckCircle :size="24" />
+            <div class="group-info">
+              <h2>Best Practices Tool Settings</h2>
+              <p>Configure analysis rules for the Best Practices tool (available on Private and Public Taskbot pages)</p>
+            </div>
+          </div>
+          
+          <!-- Best Practices Section -->
+          <div class="card">
           <div class="card-header">
             <Shield :size="20" />
             <h3>Best Practices</h3>
@@ -228,6 +232,7 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
 
@@ -289,7 +294,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { Check, AlertCircle, CheckCircle, Shield, Activity, Variable, RotateCcw, Loader2, X, Wrench } from 'lucide-vue-next';
-import ToolHeader from '../components/ToolHeader.vue';
 import {
   getConfig,
   saveConfig,
@@ -406,6 +410,51 @@ onMounted(() => {
   flex: 1;
   overflow-y: auto;
   padding: 1rem;
+}
+
+/* Settings Group */
+.settings-group {
+  background: #f0f9ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-lg, 0.5rem);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.group-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.group-header > svg {
+  color: #3b82f6;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.group-info h2 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e40af;
+}
+
+.group-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.settings-group .card {
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.settings-group .card:last-child {
+  margin-bottom: 0;
 }
 
 /* Cards */

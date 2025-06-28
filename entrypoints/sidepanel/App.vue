@@ -337,6 +337,7 @@ const getPageIcon = (iconName: string) => {
   min-height: 0;
   position: relative;
   z-index: 1;
+  isolation: isolate;
 }
 
 .placeholder {

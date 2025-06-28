@@ -16,11 +16,9 @@
     </div>
     
     <div class="tab-content">
-      <transition name="fade" mode="out-in">
-        <div :key="activeTab" class="tab-pane">
-          <slot :name="activeTab" />
-        </div>
-      </transition>
+      <div class="tab-pane">
+        <slot :name="activeTab" />
+      </div>
     </div>
   </div>
 </template>
@@ -151,6 +149,7 @@ const setActiveTab = (tabId: string) => {
   overflow-y: auto;
   background: var(--bg-primary);
   position: relative;
+  min-height: 0;
 }
 
 .tab-content::before {
@@ -167,21 +166,7 @@ const setActiveTab = (tabId: string) => {
 
 .tab-pane {
   height: 100%;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
+  position: relative;
 }
 
 /* Responsive breakpoints */

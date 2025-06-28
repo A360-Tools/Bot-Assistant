@@ -96,16 +96,18 @@
               </div>
             </div>
             <div class="attribute-value-wrapper">
+              <div v-if="attr.value === null" class="value-display no-value">
+                No value set
+              </div>
               <input
+                v-else
                 :type="(attr.masked || attr.passwordFlag) && !visiblePasswords.has(attr.id) ? 'password' : 'text'"
-                :value="attr.value || ''"
-                :placeholder="attr.value === null ? 'No value set' : 'Loading...'"
+                :value="attr.value"
                 readonly
                 class="value-input"
                 :class="{ 
-                  'loading': attr.value === null,
                   'masked': (attr.masked || attr.passwordFlag) && !visiblePasswords.has(attr.id),
-                  'has-value': attr.value !== null
+                  'has-value': true
                 }"
               />
             </div>
@@ -167,6 +169,10 @@ const credentialId = computed(() => {
 const loadCredentialData = async () => {
   loading.value = true;
   error.value = '';
+  
+  // Clear UI states on refresh
+  visiblePasswords.value.clear();
+  copiedId.value = null;
   
   try {
     // Wait for credential ID to be available
@@ -500,6 +506,7 @@ onMounted(() => {
   padding: var(--space-lg);
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
+  min-height: 120px;
 }
 
 .attribute-card:hover {
@@ -589,9 +596,12 @@ onMounted(() => {
 
 .attribute-value-wrapper {
   position: relative;
+  width: 100%;
+  overflow: hidden;
 }
 
-.value-input {
+.value-input,
+.value-display {
   width: 100%;
   padding: var(--space-md);
   background: var(--bg-secondary);
@@ -601,36 +611,42 @@ onMounted(() => {
   font-size: var(--font-base);
   color: var(--text-primary);
   cursor: text;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  line-height: 1.5;
+  min-height: 42px;
+  letter-spacing: normal;
+  display: block;
 }
 
-.value-input:hover {
+.value-display.no-value {
+  color: var(--text-tertiary);
+  font-style: italic;
+  cursor: default;
+}
+
+.value-input:hover,
+.value-display:hover {
   background: var(--bg-tertiary);
 }
 
-.value-input.loading {
-  color: var(--text-tertiary);
-  font-style: italic;
-}
+/* Removed .value-input.loading as we now use .value-display.no-value */
 
 .value-input.masked {
-  letter-spacing: 0.1em;
+  /* Removed letter-spacing to prevent width changes */
+  /* Use same font characteristics for both states */
 }
 
 .value-input.has-value {
   font-weight: var(--font-medium);
 }
 
-.value-input:focus {
+.value-input:focus,
+.value-display:focus {
   outline: none;
   border-color: var(--primary);
   background: var(--bg-primary);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.value-input::placeholder {
-  color: var(--text-tertiary);
-  font-style: italic;
-  font-weight: normal;
-}
+/* Removed placeholder styles as we now use a separate div for empty state */
 </style>
