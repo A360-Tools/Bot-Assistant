@@ -32,6 +32,10 @@
       <PatchContentView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
+    <div v-else-if="showDeviceReset">
+      <DeviceResetView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+    </div>
+    
     <div v-else-if="availableTools.length > 0" class="tools-grid">
       <ToolCard
         v-for="tool in availableTools"
@@ -68,10 +72,11 @@ import CredentialsView from './CredentialsView.vue';
 import ContentModificationView from './ContentModificationView.vue';
 import PackageDownloadView from './PackageDownloadView.vue';
 import PatchContentView from './PatchContentView.vue';
+import DeviceResetView from './DeviceResetView.vue';
 import type { Tool } from '../config/routes';
 import { usePageContext } from '../composables/usePageContext';
 import { getDefaultToolForPageType, TOOL_PREFERENCE_VALUES } from '../utils/storage';
-import { SUPPORTED_SECTIONS } from '../utils/navigationHelp';
+import { getSupportedSections } from '../config/routes';
 
 interface Props {
   availableTools: Tool[];
@@ -119,7 +124,11 @@ const showPatchContent = computed(() => {
   return activeToolId.value === 'patch-content' && props.availableTools.some(t => t.id === 'patch-content');
 });
 
-const supportedSections = computed(() => SUPPORTED_SECTIONS);
+const showDeviceReset = computed(() => {
+  return activeToolId.value === 'device-reset' && props.availableTools.some(t => t.id === 'device-reset');
+});
+
+const supportedSections = computed(() => getSupportedSections());
 
 // Store the last URL
 const lastUrl = ref(currentUrl.value);
@@ -188,7 +197,7 @@ const handleToolClick = (tool: Tool) => {
   const validToolIds = [
     'download-files', 'update-packages', 'copy-files', 
     'best-practices', 'view-attributes', 'content-modification',
-    'package-download', 'patch-content'
+    'package-download', 'patch-content', 'device-reset'
   ];
   
   if (validToolIds.includes(tool.id)) {

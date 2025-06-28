@@ -28,6 +28,11 @@ export const NAVIGATION_SECTIONS = {
     name: 'Packages',
     path: 'Manage > Packages',
     description: 'Navigate to Control Room > Manage > Packages'
+  },
+  DEVICES: {
+    name: 'Devices',
+    path: 'Manage > Devices',
+    description: 'Navigate to Control Room > Manage > Devices'
   }
 } as const;
 
@@ -37,5 +42,6 @@ export const SUPPORTED_SECTIONS = [
   NAVIGATION_SECTIONS.CREDENTIALS,
   NAVIGATION_SECTIONS.PRIVATE_FOLDERS,
   NAVIGATION_SECTIONS.PUBLIC_FOLDERS,
-  NAVIGATION_SECTIONS.PACKAGES
+  NAVIGATION_SECTIONS.PACKAGES,
+  NAVIGATION_SECTIONS.DEVICES
 ];

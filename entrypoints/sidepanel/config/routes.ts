@@ -139,6 +139,21 @@ export const routeConfigs: RouteConfig[] = [
         action: 'PACKAGE_DOWNLOAD'
       }
     ]
+  },
+  {
+    paths: [/#\/devices\/mydevices/],
+    type: 'devices',
+    name: 'Devices',
+    icon: 'HardDrive',
+    tools: [
+      {
+        id: 'device-reset',
+        name: 'Device Reset',
+        icon: 'RotateCcw',
+        description: 'Reset selected devices',
+        action: 'DEVICE_RESET'
+      }
+    ]
   }
 ];
 
@@ -163,4 +178,33 @@ export function getAllTools(): Tool[] {
     });
   });
   return Array.from(toolMap.values());
+}
+
+// Get navigation text for a route type
+export function getNavigationText(type: string): string {
+  const navigationMap: Record<string, string> = {
+    'privateBot': 'Navigate to Control Room > Automation > Private tab > Open any bot',
+    'publicBot': 'Navigate to Control Room > Automation > Public tab > Open any bot',
+    'credentials': 'Navigate to Control Room > Manage > Credentials > Open any credential',
+    'privateFolder': 'Navigate to Control Room > Automation > Private tab > Open any folder',
+    'publicFolder': 'Navigate to Control Room > Automation > Public tab > Open any folder',
+    'packages': 'Navigate to Control Room > Manage > Packages',
+    'devices': 'Navigate to Control Room > Manage > Devices'
+  };
+  
+  return navigationMap[type] || '';
+}
+
+// Get all supported sections dynamically from route configs
+export function getSupportedSections() {
+  return routeConfigs.map(config => ({
+    name: config.name,
+    description: getNavigationText(config.type)
+  }));
+}
+
+// Get tools for a specific page type
+export function getToolsForPageType(pageType: string): Tool[] {
+  const config = routeConfigs.find(c => c.type === pageType);
+  return config?.tools || [];
 }

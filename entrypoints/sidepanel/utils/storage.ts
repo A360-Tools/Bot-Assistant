@@ -13,6 +13,8 @@ export interface DefaultToolPreferences {
   publicFolder?: string;
   credentials?: string;
   packages?: string;
+  devices?: string;
+  [key: string]: string | undefined; // Allow dynamic keys
 }
 
 export interface BestPracticesConfig {

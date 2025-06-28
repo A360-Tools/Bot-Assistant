@@ -43,7 +43,7 @@
 import { computed } from 'vue';
 import { Info, Navigation } from 'lucide-vue-next';
 import * as icons from 'lucide-vue-next';
-import { routeConfigs } from '../config/routes';
+import { routeConfigs, getNavigationText } from '../config/routes';
 
 const allCategories = computed(() => {
   return routeConfigs.map(config => ({
@@ -65,16 +65,7 @@ const getToolIcon = (iconName: string) => {
 };
 
 const getAvailabilityText = (type: string): string => {
-  const availabilityMap: Record<string, string> = {
-    'privateBot': 'Navigate to Control Room > Automation > Private tab > Open any bot',
-    'publicBot': 'Navigate to Control Room > Automation > Public tab > Open any bot',
-    'credentials': 'Navigate to Control Room > Manage > Credentials > Open any credential',
-    'privateFolder': 'Navigate to Control Room > Automation > Private tab > Open any folder',
-    'publicFolder': 'Navigate to Control Room > Automation > Public tab > Open any folder',
-    'packages': 'Navigate to Control Room > Manage > Packages'
-  };
-  
-  return availabilityMap[type] || '';
+  return getNavigationText(type);
 };
 </script>
 

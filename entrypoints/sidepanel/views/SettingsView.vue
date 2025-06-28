@@ -13,79 +13,28 @@
             <p class="section-description">Choose your preferred tool behavior for each page type. You can auto-select when only one tool is available, always show the selection menu, or always use a specific tool.</p>
             
             <div class="default-tools-grid">
-              <div class="form-field">
-                <label>Private Bot Pages</label>
-                <select v-model="defaultTools.privateBot">
+              <div v-for="config in pageConfigs" :key="config.type" class="form-field">
+                <label>{{ config.name }} Pages</label>
+                <select v-model="defaultTools[config.type]">
                   <option value="auto-single">Auto-select when single</option>
                   <option value="always-show">Always show selection</option>
-                  <option value="best-practices">Always use Best Practices</option>
-                  <option value="content-modification">Always use Content Modification</option>
-                </select>
-              </div>
-              
-              <div class="form-field">
-                <label>Public Bot Pages</label>
-                <select v-model="defaultTools.publicBot">
-                  <option value="auto-single">Auto-select when single</option>
-                  <option value="always-show">Always show selection</option>
-                  <option value="best-practices">Always use Best Practices</option>
-                </select>
-              </div>
-              
-              <div class="form-field">
-                <label>Private Folder Pages</label>
-                <select v-model="defaultTools.privateFolder">
-                  <option value="auto-single">Auto-select when single</option>
-                  <option value="always-show">Always show selection</option>
-                  <option value="download-files">Always use Download Files</option>
-                  <option value="update-packages">Always use Update Packages</option>
-                  <option value="copy-files">Always use Copy Files</option>
-                  <option value="patch-content">Always use Patch Files</option>
-                </select>
-              </div>
-              
-              <div class="form-field">
-                <label>Public Folder Pages</label>
-                <select v-model="defaultTools.publicFolder">
-                  <option value="auto-single">Auto-select when single</option>
-                  <option value="always-show">Always show selection</option>
-                  <option value="download-files">Always use Download Files</option>
-                </select>
-              </div>
-              
-              <div class="form-field">
-                <label>Credentials Pages</label>
-                <select v-model="defaultTools.credentials">
-                  <option value="auto-single">Auto-select when single</option>
-                  <option value="always-show">Always show selection</option>
-                  <option value="view-attributes">Always use View Attributes</option>
-                </select>
-              </div>
-              
-              <div class="form-field">
-                <label>Packages Pages</label>
-                <select v-model="defaultTools.packages">
-                  <option value="auto-single">Auto-select when single</option>
-                  <option value="always-show">Always show selection</option>
-                  <option value="package-download">Always use Package Download</option>
+                  <option v-for="tool in config.tools" :key="tool.id" :value="tool.id">
+                    Always use {{ tool.name }}
+                  </option>
                 </select>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Best Practices Tool Settings Group -->
-        <div class="settings-group">
-          <div class="group-header">
-            <CheckCircle :size="24" />
-            <div class="group-info">
-              <h2>Best Practices Tool Settings</h2>
-              <p>Configure analysis rules for the Best Practices tool (available on Private and Public Taskbot pages)</p>
-            </div>
-          </div>
-          
-          <!-- Best Practices Section -->
-          <div class="card">
+        <!-- Best Practices Tool Settings -->
+        <h2 class="section-heading">
+          <CheckCircle :size="20" />
+          Best Practices Tool Settings
+        </h2>
+        
+        <!-- Best Practices Section -->
+        <div class="card">
           <div class="card-header">
             <Shield :size="20" />
             <h3>Best Practices</h3>
@@ -232,7 +181,6 @@
             </div>
           </div>
         </div>
-        </div>
       </div>
     </div>
 
@@ -306,6 +254,7 @@ import {
   type DefaultToolPreferences,
   TOOL_PREFERENCE_VALUES
 } from '../utils/storage';
+import { routeConfigs, getToolsForPageType } from '../config/routes';
 
 // State
 const config = ref<BestPracticesConfig>(JSON.parse(JSON.stringify(DEFAULT_CONFIG)));
@@ -321,20 +270,27 @@ const hasErrors = computed(() => {
   return Object.keys(regexErrors.value).length > 0;
 });
 
+// Get page configurations dynamically from routes
+const pageConfigs = computed(() => {
+  return routeConfigs.map(config => ({
+    type: config.type,
+    name: config.name,
+    tools: config.tools
+  }));
+});
+
 // Load configuration
 async function loadConfiguration() {
   config.value = await getConfig();
   const prefs = await getDefaultToolPreferences();
   
-  // Map existing empty strings to 'auto-single' for backward compatibility
-  defaultTools.value = {
-    privateBot: prefs.privateBot || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    publicBot: prefs.publicBot || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    privateFolder: prefs.privateFolder || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    publicFolder: prefs.publicFolder || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    credentials: prefs.credentials || TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    packages: prefs.packages || TOOL_PREFERENCE_VALUES.AUTO_SINGLE
-  };
+  // Initialize default tools for all page types dynamically
+  const tools: any = {};
+  routeConfigs.forEach(config => {
+    tools[config.type] = prefs[config.type] || TOOL_PREFERENCE_VALUES.AUTO_SINGLE;
+  });
+  
+  defaultTools.value = tools;
 }
 
 // Validate regex patterns
@@ -377,14 +333,14 @@ function resetToDefaults() {
 async function confirmReset() {
   showResetModal.value = false;
   await resetConfig();
-  await saveDefaultToolPreferences({
-    privateBot: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    publicBot: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    privateFolder: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    publicFolder: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    credentials: TOOL_PREFERENCE_VALUES.AUTO_SINGLE,
-    packages: TOOL_PREFERENCE_VALUES.AUTO_SINGLE
+  
+  // Reset all page types to auto-single dynamically
+  const resetPrefs: any = {};
+  routeConfigs.forEach(config => {
+    resetPrefs[config.type] = TOOL_PREFERENCE_VALUES.AUTO_SINGLE;
   });
+  
+  await saveDefaultToolPreferences(resetPrefs);
   await loadConfiguration();
 }
 
@@ -412,49 +368,19 @@ onMounted(() => {
   padding: 1rem;
 }
 
-/* Settings Group */
-.settings-group {
-  background: #f0f9ff;
-  border: 1px solid #bfdbfe;
-  border-radius: var(--radius-lg, 0.5rem);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.group-header {
+/* Section Heading */
+.section-heading {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.group-header > svg {
-  color: #3b82f6;
-  flex-shrink: 0;
-  margin-top: 0.125rem;
-}
-
-.group-info h2 {
-  margin: 0 0 0.25rem 0;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0.75rem;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1e40af;
+  color: #1e293b;
 }
 
-.group-info p {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #64748b;
-  line-height: 1.5;
-}
-
-.settings-group .card {
-  background: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.settings-group .card:last-child {
-  margin-bottom: 0;
+.section-heading svg {
+  color: #3b82f6;
 }
 
 /* Cards */

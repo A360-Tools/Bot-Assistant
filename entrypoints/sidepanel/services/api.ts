@@ -79,6 +79,47 @@ export interface BotContent {
   [key: string]: any;
 }
 
+export interface Device {
+  id: string;
+  type: 'SINGLE_USER' | 'MULTI_USER';
+  hostName: string;
+  status: 'CONNECTED' | 'CONNECTED_HAS_UPDATE' | 'CONNECTED_NEEDS_UPDATE' | 'WAITING_FOR_UPDATE' | 'UPDATING' | 'DISCONNECTED' | 'DISCONNECTED_FOR_UPDATE' | 'CONFIGURING' | 'INITIALIZING';
+  poolName: string;
+  updatedBy: string;
+  updatedOn: string;
+  botAgentVersion: string;
+  nickname: string;
+  description: string;
+  maxCount: number;
+  defaultUsers: Array<{
+    id: string;
+    username: string;
+    domain: string;
+  }>;
+  lifespan: string;
+  installationType: string;
+  logConfiguration: {
+    logLevel: string;
+    logFileSize: number;
+    numberOfLogFile: number;
+    logCollectorEnabled: boolean;
+    level: string;
+  };
+  logLevel: string;
+  hostType: string;
+  deploymentType: string;
+  botAgentDebugApiVersion: number;
+}
+
+export interface DeviceListResponse {
+  page: {
+    offset: number;
+    total: number;
+    totalFilter: number;
+  };
+  list: Device[];
+}
+
 class ApiService {
   private static instance: ApiService;
   private authToken: string | null = null;
@@ -578,6 +619,42 @@ class ApiService {
    */
   async getAuthToken(): Promise<string | null> {
     return this.authToken;
+  }
+
+  /**
+   * List devices with optional filters
+   */
+  async listDevices(filters?: any): Promise<DeviceListResponse> {
+    const body = filters || {
+      fields: [],
+      filter: null,
+      sort: [
+        {
+          field: 'hostName',
+          direction: 'asc',
+        },
+      ],
+      page: {
+        offset: 0,
+        length: 100,
+      },
+    };
+
+    return this.post<DeviceListResponse>('/v2/devices/list', body);
+  }
+
+  /**
+   * Reset selected devices
+   */
+  async resetDevices(deviceIds: string[]): Promise<void> {
+    const body = {
+      deviceIds: {
+        ids: deviceIds,
+      },
+    };
+
+    // This endpoint returns 204 No Content on success
+    await this.post('/v2/devices/reset', body);
   }
 }
 
