@@ -1,27 +1,21 @@
 export default defineBackground(() => {
-  // Bot Assistant background script loaded
 
   // Set up side panel behavior
   chrome.sidePanel
     .setPanelBehavior({ openPanelOnActionClick: true })
     .catch((error) => {});
 
-  // Handle extension icon click
   chrome.action.onClicked.addListener((tab) => {
-    // Extension icon clicked
   });
 
   // Listen for messages from content scripts or popup
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    // Handle message
-    
     if (request.action === 'openSidePanel') {
       // Open the side panel for the tab that sent the message
       if (sender.tab?.id) {
         chrome.sidePanel.open({ tabId: sender.tab.id })
           .then(() => sendResponse({ success: true }))
           .catch((error) => {
-            // Failed to open side panel
             sendResponse({ success: false, error: error.message });
           });
         return true; // Keep message channel open for async response

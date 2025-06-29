@@ -91,19 +91,6 @@ export const useTabsStore = defineStore('tabs', () => {
     tabStates.value.delete(key);
   };
 
-  const clearInactiveTabs = (maxAge: number = 30 * 60 * 1000) => { // 30 minutes default
-    const now = Date.now();
-    const keysToDelete: string[] = [];
-
-    tabStates.value.forEach((state, key) => {
-      if (now - state.lastUpdated > maxAge) {
-        keysToDelete.push(key);
-      }
-    });
-
-    keysToDelete.forEach(key => tabStates.value.delete(key));
-  };
-
   return {
     // State
     tabStates,
@@ -119,7 +106,6 @@ export const useTabsStore = defineStore('tabs', () => {
     setSelectedTool,
     updateToolState,
     getToolState,
-    clearTabState,
-    clearInactiveTabs
+    clearTabState
   };
 });
