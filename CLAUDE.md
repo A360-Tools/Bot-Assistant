@@ -60,21 +60,13 @@ Routes are defined in `sidepanel/config/routes.ts` with visibility rules.
 - **API Proxy**: Background script forwards requests to Control Room API with proper headers
 - **Error Handling**: Centralized error messages in `utils/errorMessages.ts`
 
-## Best Practices Analysis
-
-The extension analyzes bots for:
-- Error handling (try-catch blocks)
-- Code documentation
-- Variable naming conventions (I_, O_, IO_ prefixes)
-- No hardcoded values
-- No empty containers
-- Code complexity limits
-
-Analysis rules are configurable per profile in settings.
-
 ## WXT Configuration
 
 The project uses WXT's module system with:
 - Auto-imports for Vue components and composables
 - TypeScript support with proper extension APIs typing
 - Manifest V3 with appropriate permissions (storage, tabs, sidePanel)
+
+## Important Development Practice
+
+**ALWAYS run `npm run build` after making feature-related changes or fixes** to ensure there are no TypeScript errors or build issues. This is critical for catching problems early. Do not rely on `npm run dev` alone as it may not catch all build errors.

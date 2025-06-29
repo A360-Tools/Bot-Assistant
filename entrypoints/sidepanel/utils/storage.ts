@@ -80,9 +80,11 @@ export const DEFAULT_CONFIG: BestPracticesConfig = {
 };
 
 // Storage keys
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   CONFIG: 'bestPracticesConfig',
   DEFAULT_TOOLS: 'defaultToolPreferences',
+  TOOL_PREFERENCES: 'toolPreferences',
+  BEST_PRACTICES_SETTINGS: 'bestPracticesSettings'
 };
 
 // Get configuration

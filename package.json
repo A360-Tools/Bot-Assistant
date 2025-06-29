@@ -12,7 +12,13 @@
     "zip:firefox": "wxt zip -b firefox",
     "compile": "tsc --noEmit"
   },
-  "keywords": ["automation anywhere","automation 360", "bot assistant", "automation-anywhere", "a360"],
+  "keywords": [
+    "automation anywhere",
+    "automation 360",
+    "bot assistant",
+    "automation-anywhere",
+    "a360"
+  ],
   "author": "Bot Assistant Team",
   "license": "MIT",
   "type": "commonjs",
@@ -27,6 +33,7 @@
   },
   "dependencies": {
     "lucide-vue-next": "^0.513.0",
+    "pinia": "^3.0.3",
     "vue-router": "^4.5.1"
   }
 }

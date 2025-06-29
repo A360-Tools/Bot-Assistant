@@ -129,6 +129,12 @@
         </div>
         
         <div class="modal-body">
+          <!-- Refresh reminder message -->
+          <div v-if="pasteResults.success.length > 0" class="refresh-reminder">
+            <Info :size="16" />
+            <span>Please refresh the page to see the copied files in the folder.</span>
+          </div>
+          
           <div v-if="pasteResults.success.length > 0" class="result-section">
             <div class="result-header success">
               <CheckCircle :size="16" />
@@ -184,24 +190,32 @@ import FileList from '../components/FileList.vue';
 import ConnectionError from '../components/ConnectionError.vue';
 import { apiService, type FolderItem } from '../services/api';
 import { useTabState } from '../composables/useTabState';
-import { usePageContext } from '../composables/usePageContext';
+import { storeToRefs } from 'pinia';
+import { useConnectionStore } from '../stores/connection';
+import { useClipboardStore } from '../stores/clipboard';
+import { useTabsStore } from '../stores/tabs';
 
 defineEmits<{
   back: [];
 }>();
 
 
-// Use per-tab state
+// Use per-tab state for file list data
 const tabState = useTabState({
   files: [] as FolderItem[],
   currentOffset: 0,
   totalFiles: 0,
   lastLoadedUrl: '',
-  isAuthenticated: false,
-  copiedFiles: new Set<string>(),
-  copiedFileNames: new Map<string, string>(),
-  sourceFolderId: null as string | null
+  isAuthenticated: false
 });
+
+// Get stores
+const connectionStore = useConnectionStore();
+const clipboardStore = useClipboardStore();
+const tabsStore = useTabsStore();
+
+const { currentUrl } = storeToRefs(connectionStore);
+const { copiedFiles, copiedFileNames, sourceFolderId, canPaste } = storeToRefs(clipboardStore);
 
 // Local reactive state
 const loading = ref(false);
@@ -216,8 +230,7 @@ const pasteResults = ref({
   failed: [] as { fileName: string; error: string }[]
 });
 
-// Get current URL from page context
-const { currentUrl } = usePageContext();
+// Already have currentUrl from connectionStore above
 
 // Create computed refs for tab state
 const files = computed({
@@ -235,20 +248,7 @@ const totalFiles = computed({
   set: (value) => { tabState.value.totalFiles = value; }
 });
 
-const copiedFiles = computed({
-  get: () => tabState.value.copiedFiles || new Set<string>(),
-  set: (value) => { tabState.value.copiedFiles = value; }
-});
-
-const copiedFileNames = computed({
-  get: () => tabState.value.copiedFileNames || new Map<string, string>(),
-  set: (value) => { tabState.value.copiedFileNames = value; }
-});
-
-const sourceFolderId = computed({
-  get: () => tabState.value.sourceFolderId,
-  set: (value) => { tabState.value.sourceFolderId = value; }
-});
+// No need for computed refs - copiedFiles, copiedFileNames, and sourceFolderId are already refs from the store
 
 const selectedFiles = ref(new Set<string>());
 
@@ -268,14 +268,7 @@ const pasteProgress = computed(() => {
 
 // Determine mode based on whether we have copied files and if we're in a different folder
 const mode = computed(() => {
-  if (copiedFiles.value.size === 0) return 'copy';
-  
-  const currentFolderId = getCurrentFolderIdFromUrl(currentUrl.value);
-  if (currentFolderId && currentFolderId !== sourceFolderId.value) {
-    return 'paste';
-  }
-  
-  return 'copy';
+  return canPaste.value ? 'paste' : 'copy';
 });
 
 // Watch for URL changes
@@ -287,7 +280,11 @@ watch(currentUrl, (newUrl, oldUrl) => {
   
   if (newFolderId && newFolderId !== oldFolderId) {
     files.value = [];
-    selectedFiles.value.clear();
+    // Don't clear selectedFiles - we need to preserve them for copy/paste
+    // Only clear if we're in copy mode (no files copied yet)
+    if (copiedFiles.value.size === 0) {
+      selectedFiles.value.clear();
+    }
     initialize();
   }
 });
@@ -296,6 +293,11 @@ const initialize = async (forceRefresh = false) => {
   try {
     await apiService.initialize();
     isAuthenticated.value = apiService.isAuthenticated();
+    
+    // Clear selections on force refresh
+    if (forceRefresh) {
+      selectedFiles.value.clear();
+    }
     
     if (isAuthenticated.value && (forceRefresh || currentUrl.value !== tabState.value.lastLoadedUrl || !tabState.value.files?.length)) {
       await loadFiles();
@@ -382,23 +384,19 @@ const copySelectedFiles = async () => {
     return;
   }
   
-  // Store copied files and their names
-  copiedFiles.value = new Set(selectedFiles.value);
-  
-  // Create a new Map for file names to ensure proper reactivity
-  const newFileNamesMap = new Map<string, string>();
+  // Create a new Map for file names
+  const fileNamesMap = new Map<string, string>();
   
   // Store file names for display
   selectedFiles.value.forEach(fileId => {
     const file = files.value.find(f => f.id === fileId);
     if (file) {
-      newFileNamesMap.set(fileId, file.name);
+      fileNamesMap.set(fileId, file.name);
     }
   });
   
-  copiedFileNames.value = newFileNamesMap;
-  
-  sourceFolderId.value = currentFolderId;
+  // Copy files using the clipboard store
+  clipboardStore.copyFiles(selectedFiles.value, fileNamesMap, currentFolderId);
   
   // Clear selection
   selectedFiles.value.clear();
@@ -469,24 +467,14 @@ const pasteFiles = async () => {
   showPasteResults.value = true;
   pasteResults.value = results;
   
-  // Refresh if any files were successfully copied
+  // Refresh the tool to show updated files in the current folder
   if (results.success.length > 0) {
-    // Refresh the folder list in the web app
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'refreshFolderList' });
-      }
-    });
-    
-    // Reload files in sidepanel
     await loadFiles();
   }
 };
 
 const clearCopiedFiles = () => {
-  copiedFiles.value = new Set<string>();
-  copiedFileNames.value = new Map<string, string>();
-  sourceFolderId.value = null;
+  clipboardStore.clearClipboard();
   currentPasteIndex.value = 0;
   showPasteResults.value = false;
   pasteResults.value = {
@@ -813,6 +801,19 @@ onMounted(() => {
 
 .result-section:last-child {
   margin-bottom: 0;
+}
+
+.refresh-reminder {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background-color: #eff6ff;
+  border: 1px solid #3b82f6;
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  color: #1e40af;
+  font-size: 0.875rem;
 }
 
 .result-header {

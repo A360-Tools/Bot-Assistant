@@ -52,36 +52,42 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { Bot, Grid, Settings, ChevronRight, AlertCircle } from 'lucide-vue-next';
 import * as icons from 'lucide-vue-next';
-import { usePageContext } from './composables/usePageContext';
+import { storeToRefs } from 'pinia';
+import { useConnectionStore } from './stores/connection';
+import { useTabsStore } from './stores/tabs';
 import TabPanel from './components/TabPanel.vue';
 import ToolsView from './views/ToolsView.vue';
 import AllToolsView from './views/AllToolsView.vue';
 import SettingsView from './views/SettingsView.vue';
 
-const { isConnected, currentUrl, currentRouteConfig, availableTools } = usePageContext();
+const connectionStore = useConnectionStore();
+const tabsStore = useTabsStore();
+
+const { isConnected, currentUrl, availableTools, currentRouteConfig } = storeToRefs(connectionStore);
+
+// Initialize connection listener
+onMounted(() => {
+  connectionStore.initializeListeners();
+});
 
 // Create a reactive signal to reset tools when URL changes
 const toolsResetTrigger = ref(0);
 
-// Watch for URL changes and always trigger reset
+// Watch for URL changes
 watch(currentUrl, (newUrl, oldUrl) => {
   if (newUrl !== oldUrl) {
-    console.log('[App.vue] URL changed, triggering reset');
-    toolsResetTrigger.value++;
+    console.log('[App.vue] URL changed');
   }
 });
 
 // Watch for connection status changes
-let wasDisconnected = !isConnected.value;
-watch(isConnected, (newValue, oldValue) => {
-  // If we were disconnected and now connected, trigger reset
-  if (wasDisconnected && newValue) {
-    toolsResetTrigger.value++;
+watch(isConnected, (newValue) => {
+  if (!newValue) {
+    connectionStore.startDisconnectionTimer();
   }
-  wasDisconnected = !newValue;
 });
 
 // Handle tab changes

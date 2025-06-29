@@ -18,7 +18,7 @@
     <template v-else>
       <div class="info-message">
         <Info :size="16" />
-        <p>Select devices to reset. This will restart the bot agent on selected devices.</p>
+        <p>Select devices to reset. This will reset the bot agent on selected devices.</p>
       </div>
       
       <DeviceList

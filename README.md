@@ -1,77 +1,178 @@
 # Bot Assistant - Chrome Extension
 
-A powerful Chrome extension for Automation Anywhere Control Room that enhances your bot development experience with modern tools and best practices analysis.
+A powerful Chrome extension for Automation Anywhere Control Room that enhances your bot development experience with intelligent tools, best practices analysis, and streamlined workflows.
 
-## Screenshots
+<img src="docs/images/banner.png" alt="Bot Assistant Banner" width="800" />
 
-### Available Tools
-![Available Tools](docs/images/tools.png)
+## 🚀 Features Overview
+
+Bot Assistant transforms your Control Room experience with a suite of powerful tools designed for bot developers, administrators, and operations teams.
+
+### 🎯 Context-Aware Tools
+The extension automatically detects your current Control Room page and provides relevant tools through an intuitive side panel interface.
+
+<img src="docs/images/side-panel-interface.png" alt="Side Panel Interface" width="800" />
+
+## 📸 Screenshots
+
+### Tools Dashboard
+<img src="docs/images/tools-dashboard.png" alt="Tools Dashboard" width="800" />
+
+*All available tools dynamically displayed based on your current page*
 
 ### Best Practices Analysis
-![Best Practices Analysis](docs/images/best%20practices%20analysis.png)
+<img src="docs/images/best-practices-analysis.png" alt="Best Practices Analysis" width="800" />
+
+<img src="docs/images/best-practices-settings.png" alt="Best Practices Settings" width="800" />
+
+*Comprehensive code quality analysis with configurable rules*
 
 ### File Operations
-![Copy and Paste Files in Bulk](docs/images/Coy%20paste%20files%20in%20bulk.png)
+<img src="docs/images/file-download.png" alt="File Download" width="800" />
 
-### Settings & Configuration
-![Best Practices Settings](docs/images/best%20practices%20setting.png)
+*Browse and download files with folder navigation*
 
-## Features
+<img src="docs/images/copy-files.png" alt="Copy Files" width="800" />
 
-- **Modern Side Panel Interface** - Persistent UI using Chrome's Side Panel API
-- **Best Practices Analysis** - Real-time code quality checks for your bots
-- **File Management** - Download, copy, and manage Control Room files efficiently
-- **Package Management** - Bulk update bot packages to default versions
-- **Content Modification** - Tools for managing variables and credentials
-- **Universal Support** - Works with both cloud and on-premise Control Room instances
+*Bulk copy files between folders*
 
-## Installation
+### Package Management
+<img src="docs/images/update-packages.png" alt="Update Packages" width="800" />
+
+*Bulk update bot packages to default versions*
+
+<img src="docs/images/package-download.png" alt="Package Download" width="800" />
+
+*Download package JAR files for analysis and importing into another control room*
+
+### Content Tools
+<img src="docs/images/content-modification.png" alt="Content Modification" width="800" />
+
+*Modify bot JSON content with syntax highlighting, can be used to copy bots from one control room to another*
+
+<img src="docs/images/patch-files.png" alt="Patch Files" width="800" />
+
+*Find and replace text across multiple bot files, useful for updating paths and other bulk changes*
+
+### Device Management
+<img src="docs/images/device-reset.png" alt="Device Reset" width="800" />
+
+*Reset bot agents on multiple devices simultaneously*
+
+### Credential Management
+<img src="docs/images/view-credentials.png" alt="View Credentials" width="800" />
+
+*Securely view and copy credential attributes*
+
+## 🛠️ Available Tools
+
+### 📋 Best Practices Analysis
+Available on: **Private & Public Bot Pages**
+
+Automatically analyzes your bot code for:
+- ✅ Error handling coverage (Try-Catch blocks)
+- 📝 Code documentation and comments
+- 🔤 Variable naming conventions (Input/Output/Regular patterns)
+- 📊 Code complexity metrics
+- ⚡ Performance optimizations
+- 🚫 Prohibited actions (Message boxes, hardcoded delays)
+- 📦 Empty containers detection
+- 🔧 Bot compatibility version checks
+
+### 📁 File Management
+Available on: **Private & Public Folder Pages**
+
+- **Download Files** - Browse folder structure and download files with progress tracking
+- **Copy Files** - Bulk copy files to different folders with conflict resolution
+- **Patch Content** - Find and replace text across multiple bot files with regex support
+
+### 📦 Package Operations
+Available on: **Private Folders & Package Pages**
+
+- **Update Packages** - Bulk update bot packages to their default versions
+- **Package Download** - Download package JAR files for offline development
+
+### 🔧 Content Modification
+Available on: **Private Bot Pages**
+
+- **Content Modification** - Direct JSON editing with syntax validation
+- **Variable Management** - Add, modify, or remove bot variables
+
+### 🖥️ Device Management
+Available on: **Device Pages**
+
+- **Device Reset** - Reset bot agents on selected devices
+- **Status Monitoring** - View device connection status and agent versions
+
+### 🔐 Credential Management
+Available on: **Credential Pages**
+
+- **View Attributes** - Securely view credential attributes
+- **Copy Values** - Copy credential values to clipboard
+
+## 🎨 Smart Features
+
+### 🎯 Dynamic Tool System
+- Tools automatically appear based on your current page
+- No manual switching between contexts
+- Intelligent tool recommendations
+
+### ⚙️ Customizable Settings
+- **Tool Preferences** - Set default tools for each page type
+- **Analysis Rules** - Configure best practices rules
+- **Variable Patterns** - Define custom naming conventions with regex
+
+### 🔄 Bulk Operations
+- Select multiple items for batch processing
+- Progress tracking for long-running operations
+- Detailed results reporting
+
+### 🌐 Universal Compatibility
+- Works with cloud Control Rooms (`*.automationanywhere.com`, `*.automationanywhere.digital`)
+- Supports on-premise installations
+- Compatible with all Control Room versions
+
+## 📥 Installation
 
 ### From Chrome Web Store
-https://chrome.google.com/webstore/detail/bot-assistant/bdnogmeijaanbgpnmbhlhmkfcbaoejcp
+[Install Bot Assistant](https://chrome.google.com/webstore/detail/bot-assistant/bdnogmeijaanbgpnmbhlhmkfcbaoejcp)
 
 ### Manual Installation
-1. Download the latest release from the [Releases](https://github.com/A360-Tools/Bot-Assistant/releases) page
+1. Download the latest release from [Releases](https://github.com/A360-Tools/Bot-Assistant/releases)
 2. Extract the ZIP file
 3. Open Chrome and navigate to `chrome://extensions/`
 4. Enable "Developer mode" (toggle in top right)
 5. Click "Load unpacked" and select the extracted folder
-6. The extension is now installed!
+6. Pin the extension for easy access
 
-## Usage
+## 🚀 Getting Started
 
-1. Navigate to any Automation Anywhere Control Room instance
-2. Click the Bot Assistant extension icon in your toolbar
-3. The side panel will open with available tools
-4. Select the tool you need from the navigation menu
+1. **Navigate to Control Room** - Open any Automation Anywhere Control Room
+2. **Open Bot Assistant** - Click the extension icon or use the keyboard shortcut
+3. **Start Using Tools** - The relevant tools automatically appear based on your current page
 
-## Supported Environments
+### Quick Tips
+- 📌 Pin the extension for quick access
+- ⌨️ Use keyboard shortcuts for faster navigation
+- 🔧 Configure default tools in Settings for automatic tool launch
+- 📊 Customize best practices rules to match your team's standards
 
-Bot Assistant works with:
-- Automation Anywhere Cloud Control Rooms (`*.automationanywhere.com`, `*.automationanywhere.digital`)
-- On-premise Control Room installations (any domain)
-- Local development environments
+## 🔧 Configuration
 
-## Available Tools
+### Default Tool Preferences
+Configure how tools behave when you navigate to different pages:
+- **Auto-select when single** - Automatically open the tool if it's the only one available
+- **Always show selection** - Always display tool selection menu
+- **Always use [Tool Name]** - Automatically open a specific tool
 
-### Best Practices Analysis
-Automatically analyzes your bot code for:
-- Error handling coverage
+### Best Practices Rules
+Customize analysis rules for your organization:
+- Required code patterns
 - Variable naming conventions
-- Code organization
-- Performance optimizations
-- Documentation standards
+- Code complexity limits
+- Prohibited actions
 
-### File Operations
-- **Download Files** - Download files directly from Control Room folders
-- **Copy Files** - Copy files between different folders
-- **Update Packages** - Bulk update package versions across multiple bots
-
-### Content Modification
-- **Variable Management** - Modify and manage bot variables
-- **Credential Management** - Handle credential configurations
-
-## Development
+## 💻 Development
 
 ### Prerequisites
 - Node.js 18+
@@ -82,50 +183,77 @@ Automatically analyzes your bot code for:
 ```bash
 # Clone the repository
 git clone https://github.com/A360-Tools/Bot-Assistant.git
-cd Bot-Assistant/bot-assistant
+cd Bot-Assistant/bot-assistant-extension
 
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server with hot reload
 npm run dev
 
 # Build for production
 npm run build
+
+# Create distribution package
+npm run zip
 ```
+
+### Tech Stack
+- **[WXT](https://wxt.dev/)** - Next-gen Web Extension Framework
+- **[Vue.js 3](https://vuejs.org/)** - Reactive UI framework
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
+- **[Lucide Icons](https://lucide.dev/)** - Beautiful icon set
 
 ### Project Structure
 ```
-bot-assistant/
-├── entrypoints/       # Extension entry points
-│   ├── background.ts  # Service worker
-│   ├── content.ts     # Content script
-│   └── sidepanel/     # Vue.js application
-├── public/            # Static assets
-├── docs/              # Documentation
-│   └── images/        # Screenshots and images
-├── types/             # TypeScript definitions
-└── wxt.config.ts      # WXT configuration
+bot-assistant-extension/
+├── entrypoints/          # Extension entry points
+│   ├── background.ts     # Service worker for API proxying
+│   ├── content.ts        # Content script for page interaction
+│   └── sidepanel/        # Vue.js side panel application
+│       ├── App.vue       # Main application component
+│       ├── components/   # Reusable Vue components
+│       ├── views/        # Tool view components
+│       ├── services/     # API and business logic
+│       └── utils/        # Helper functions
+├── public/               # Static assets and manifest
+├── docs/                 # Documentation
+│   └── images/          # Screenshots and diagrams
+├── types/               # TypeScript type definitions
+└── wxt.config.ts        # WXT configuration
 ```
 
-## Contributing
+## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-## License
+### How to Contribute
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🆘 Support
 
-- Report issues on [GitHub Issues](https://github.com/A360-Tools/Bot-Assistant/issues)
-- Join our community discussions
-- Check the [Wiki](https://github.com/A360-Tools/Bot-Assistant/wiki) for detailed documentation
+- 🐛 Report issues on [GitHub Issues](https://github.com/A360-Tools/Bot-Assistant/issues)
+- 💬 Join our community discussions
+- 📚 Check the [Wiki](https://github.com/A360-Tools/Bot-Assistant/wiki) for detailed documentation
+- 📧 Contact: support@a360-tools.com
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-Built with:
-- [WXT](https://wxt.dev/) - Next-gen Web Extension Framework
-- [Vue.js 3](https://vuejs.org/) - Progressive JavaScript Framework
-- [TypeScript](https://www.typescriptlang.org/) - JavaScript with syntax for types
-- [Lucide Icons](https://lucide.dev/) - Beautiful & consistent icons
+Built with love by the A360 Tools team and contributors.
+
+Special thanks to:
+- The Automation Anywhere community for feedback and suggestions
+- All contributors who have helped improve Bot Assistant
+- Open source projects that make this extension possible
+
+---
+
+**Bot Assistant** - Empowering Automation Anywhere developers with intelligent tools 🚀

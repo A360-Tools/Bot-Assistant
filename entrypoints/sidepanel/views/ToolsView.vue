@@ -1,39 +1,39 @@
 <template>
   <div class="tools-view">
     <div v-if="showDownloadFiles">
-      <DownloadFilesView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+      <DownloadFilesView @back="handleBackClick" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
     <div v-else-if="showUpdatePackages">
-      <UpdatePackagesView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+      <UpdatePackagesView @back="handleBackClick" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
     <div v-else-if="showCopyFiles">
-      <CopyFilesView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+      <CopyFilesView @back="handleBackClick" :key="`copy-files-${toolKey}`" />
     </div>
     
     <div v-else-if="showBestPractices">
-      <BestPracticesView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+      <BestPracticesView @back="handleBackClick" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
     <div v-else-if="showViewAttributes">
-      <CredentialsView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+      <CredentialsView @back="handleBackClick" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
     <div v-else-if="showContentModification">
-      <ContentModificationView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+      <ContentModificationView @back="handleBackClick" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
     <div v-else-if="showPackageDownload">
-      <PackageDownloadView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+      <PackageDownloadView @back="handleBackClick" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
     <div v-else-if="showPatchContent">
-      <PatchContentView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+      <PatchContentView @back="handleBackClick" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
     <div v-else-if="showDeviceReset">
-      <DeviceResetView @back="activeToolId = null" :key="`${currentUrl}-${toolKey}`" />
+      <DeviceResetView @back="handleBackClick" :key="`${currentUrl}-${toolKey}`" />
     </div>
     
     <div v-else-if="availableTools.length > 0" class="tools-grid">
@@ -74,7 +74,10 @@ import PackageDownloadView from './PackageDownloadView.vue';
 import PatchContentView from './PatchContentView.vue';
 import DeviceResetView from './DeviceResetView.vue';
 import type { Tool } from '../config/routes';
-import { usePageContext } from '../composables/usePageContext';
+import { storeToRefs } from 'pinia';
+import { useConnectionStore } from '../stores/connection';
+import { useTabsStore } from '../stores/tabs';
+import { useSettingsStore } from '../stores/settings';
 import { getDefaultToolForPageType, TOOL_PREFERENCE_VALUES } from '../utils/storage';
 import { getSupportedSections } from '../config/routes';
 
@@ -84,10 +87,13 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const { currentUrl, pageType } = usePageContext();
 
-// Simple state - no tab persistence
-const activeToolId = ref<string | null>(null);
+const connectionStore = useConnectionStore();
+const tabsStore = useTabsStore();
+const settingsStore = useSettingsStore();
+
+const { currentUrl, pageType } = storeToRefs(connectionStore);
+const { activeToolId } = storeToRefs(tabsStore);
 
 // Add a force refresh key
 const toolKey = ref(0);
@@ -133,21 +139,29 @@ const supportedSections = computed(() => getSupportedSections());
 // Store the last URL
 const lastUrl = ref(currentUrl.value);
 
-// Handle URL changes - always reset tool on URL change
+// Handle URL changes - check if tool should persist
 watch(() => currentUrl.value, (newUrl, oldUrl) => {
   if (newUrl !== oldUrl) {
+    // Check if the active tool is still available in the new URL
+    if (activeToolId.value && props.availableTools.some(t => t.id === activeToolId.value)) {
+      console.log(`[ToolsView] URL changed but ${activeToolId.value} is still available, maintaining tool`);
+      // Just update the key to trigger a refresh of the component
+      toolKey.value++;
+      return;
+    }
+    
+    // Default behavior - reset tool only if the active tool is not available
     console.log('[ToolsView] URL changed, resetting tool selection');
-    activeToolId.value = null;
-    lastUrl.value = newUrl;
+    tabsStore.setSelectedTool(null);
     toolKey.value++;
   }
 });
 
-// Watch for reset trigger from parent - always reset
+// Watch for reset trigger from parent - used for manual refresh button
 watch(() => props.resetTrigger, (newVal, oldVal) => {
   if (oldVal !== undefined) {
-    console.log('[ToolsView] Reset trigger, clearing tool selection');
-    activeToolId.value = null;
+    console.log('[ToolsView] Manual reset trigger, clearing tool selection');
+    tabsStore.setSelectedTool(null);
     toolKey.value++;
   }
 });
@@ -162,7 +176,7 @@ watch(() => props.availableTools, (newTools, oldTools) => {
   // If we have an active tool but it's not in the available tools, reset
   if (activeToolId.value && !newTools.some(t => t.id === activeToolId.value)) {
     console.log('[ToolsView] Active tool no longer in available tools, resetting...');
-    activeToolId.value = null;
+    tabsStore.setSelectedTool(null);
     // Increment key to force remount
     toolKey.value++;
   }
@@ -201,7 +215,12 @@ const handleToolClick = (tool: Tool) => {
   ];
   
   if (validToolIds.includes(tool.id)) {
-    activeToolId.value = tool.id;
+    tabsStore.setSelectedTool(tool.id);
+    
+    // Save the tool preference for this page type
+    if (pageType.value) {
+      settingsStore.setToolPreference(pageType.value, tool.id);
+    }
   } else {
     // For other tools, send message to background
     chrome.runtime.sendMessage({
@@ -209,6 +228,11 @@ const handleToolClick = (tool: Tool) => {
       toolId: tool.id
     });
   }
+};
+
+const handleBackClick = () => {
+  console.log('[ToolsView] Back button clicked');
+  tabsStore.setSelectedTool(null);
 };
 
 // Check for auto-launch on mount

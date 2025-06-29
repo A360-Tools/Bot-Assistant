@@ -328,6 +328,11 @@ const initialize = async (forceRefresh = false) => {
     await apiService.initialize();
     isAuthenticated.value = apiService.isAuthenticated();
     
+    // Clear selections on force refresh
+    if (forceRefresh) {
+      selectedBots.value.clear();
+    }
+    
     // Load bots if: forced refresh, URL changed, or no data loaded yet
     if (isAuthenticated.value && (forceRefresh || currentUrl.value !== tabState.value.lastLoadedUrl || !tabState.value.bots?.length)) {
       await loadBots();

@@ -138,6 +138,11 @@ const initialize = async (forceRefresh = false) => {
     await apiService.initialize();
     isAuthenticated.value = apiService.isAuthenticated();
     
+    // Clear selections on force refresh
+    if (forceRefresh) {
+      selectedFiles.value.clear();
+    }
+    
     // Load files if: forced refresh, URL changed, or no data loaded yet
     if (isAuthenticated.value && (forceRefresh || currentUrl.value !== tabState.value.lastLoadedUrl || !tabState.value.files?.length)) {
       await loadFiles();
