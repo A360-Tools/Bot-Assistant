@@ -293,10 +293,7 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
-  ChevronDown,
-  RefreshCw,
   Variable,
-  ChevronLeft,
   ChevronRight,
   ArrowDown,
   ArrowUp,
@@ -312,7 +309,6 @@ import {
   Table as TableIcon,
   File,
   Key,
-  Grid3x3,
   Rows3,
   Monitor,
   FileText,
@@ -371,7 +367,7 @@ const constantVariables = computed(() =>
 );
 
 // All variables that don't fall into the above categories
-const allVariables = computed(() => variableInfo.value);
+// const allVariables = computed(() => variableInfo.value);
 
 // Load bot content
 async function loadBotContent() {
@@ -617,9 +613,13 @@ function analyzeVariables() {
     if (cfg.hardCodedNotConstant && 
         variable.defaultValue && 
         !variable.readOnly) {
-      if ((variable.type === 'STRING' && variable.defaultValue.string) ||
-          (variable.type === 'NUMBER' && variable.defaultValue.number !== 0)) {
-        issues.IssueDetail = 'Hardcoded value assigned to non-constant variable';
+      if (variable.type === 'STRING' && variable.defaultValue.string) {
+        issues.IssueDetail = `Hardcoded value "${variable.defaultValue.string}" assigned to non-constant variable`;
+      } else if (variable.type === 'NUMBER' && 
+                 variable.defaultValue.number !== undefined &&
+                 variable.defaultValue.number !== 0 && 
+                 variable.defaultValue.number !== '0') {
+        issues.IssueDetail = `Hardcoded value ${variable.defaultValue.number} assigned to non-constant variable`;
       }
     }
     
@@ -852,7 +852,7 @@ watch(currentUrl, (newUrl, oldUrl) => {
 const reloadingAfterSave = ref(false);
 
 // Listen for bot save events
-const handleMessage = (request: any, sender: any, sendResponse: any) => {
+const handleMessage = (request: any, _sender: any, _sendResponse: any) => {
   if (request.action === 'botSaved') {
     // Show loading state
     reloadingAfterSave.value = true;
