@@ -9,7 +9,12 @@
       @back="handleBack"
     />
 
-    <div v-if="loading" class="loading-state">
+    <div v-if="reloadingAfterSave" class="loading-state">
+      <Loader2 :size="32" class="animate-spin" />
+      <p>Refreshing content after save...</p>
+    </div>
+    
+    <div v-else-if="loading" class="loading-state">
       <Loader2 :size="32" class="animate-spin" />
       <p>Loading bot content...</p>
     </div>
@@ -150,7 +155,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { 
   Code,
   FileText,
@@ -182,6 +187,7 @@ const error = ref('');
 const updating = ref(false);
 const copied = ref(false);
 const showSuccessToast = ref(false);
+const reloadingAfterSave = ref(false);
 
 const originalContent = ref('');
 const jsonContent = ref('');
@@ -335,6 +341,32 @@ onMounted(() => {
   if (fileId.value) {
     loadBotContent();
   }
+  
+  // Listen for bot saved events from content script
+  const handleBotSaved = (message: any) => {
+    if (message.action === 'botSaved' && !loading.value && !updating.value && !reloadingAfterSave.value) {
+      // Show loading state with refresh message
+      reloadingAfterSave.value = true;
+      
+      // Wait a bit for the save to complete before reloading
+      setTimeout(() => {
+        loadBotContent().finally(() => {
+          reloadingAfterSave.value = false;
+        });
+      }, 1500);
+    }
+  };
+  
+  chrome.runtime.onMessage.addListener(handleBotSaved);
+  
+  // Cleanup listener on unmount
+  onUnmounted(() => {
+    chrome.runtime.onMessage.removeListener(handleBotSaved);
+  });
+});
+
+onUnmounted(() => {
+  // Defined above in onMounted for proper cleanup
 });
 </script>
 

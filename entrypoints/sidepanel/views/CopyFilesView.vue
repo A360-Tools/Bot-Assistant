@@ -129,11 +129,6 @@
         </div>
         
         <div class="modal-body">
-          <!-- Refresh reminder message -->
-          <div v-if="pasteResults.success.length > 0" class="refresh-reminder">
-            <Info :size="16" />
-            <span>Please refresh the page to see the copied files in the folder.</span>
-          </div>
           
           <div v-if="pasteResults.success.length > 0" class="result-section">
             <div class="result-header success">
@@ -184,7 +179,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
-import { Info, Copy, Clipboard, X, CheckCircle, Loader2, XCircle } from 'lucide-vue-next';
+import { Info, Copy, Clipboard, X, CheckCircle, Loader2, XCircle, AlertCircle } from 'lucide-vue-next';
 import ToolHeader from '../components/ToolHeader.vue';
 import FileList from '../components/FileList.vue';
 import ConnectionError from '../components/ConnectionError.vue';
@@ -212,7 +207,6 @@ const tabState = useTabState({
 // Get stores
 const connectionStore = useConnectionStore();
 const clipboardStore = useClipboardStore();
-const tabsStore = useTabsStore();
 
 const { currentUrl } = storeToRefs(connectionStore);
 const { copiedFiles, copiedFileNames, sourceFolderId, canPaste } = storeToRefs(clipboardStore);
@@ -470,6 +464,13 @@ const pasteFiles = async () => {
   // Refresh the tool to show updated files in the current folder
   if (results.success.length > 0) {
     await loadFiles();
+    
+    // Refresh the folder list in the web app
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'refreshFolderList' });
+      }
+    });
   }
 };
 
@@ -803,18 +804,6 @@ onMounted(() => {
   margin-bottom: 0;
 }
 
-.refresh-reminder {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  background-color: #eff6ff;
-  border: 1px solid #3b82f6;
-  border-radius: 0.375rem;
-  margin-bottom: 1rem;
-  color: #1e40af;
-  font-size: 0.875rem;
-}
 
 .result-header {
   display: flex;

@@ -41,6 +41,16 @@
           <RotateCcw :size="16" />
           {{ isResetting ? 'Resetting... Do not close sidepanel' : `Reset ${selectedDevices.size} Device${selectedDevices.size > 1 ? 's' : ''}` }}
         </button>
+        
+        <div v-if="isResetting" class="reset-progress">
+          <div class="progress-info">
+            <Loader2 :size="16" class="spinner" />
+            <span>Resetting device {{ currentResetIndex + 1 }} of {{ totalResetCount }}...</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: resetProgress + '%' }"></div>
+          </div>
+        </div>
       </div>
       
       <!-- Results Modal -->
@@ -91,7 +101,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { Info, RotateCcw, CheckCircle, XCircle, X } from 'lucide-vue-next';
+import { Info, RotateCcw, CheckCircle, XCircle, X, Loader2 } from 'lucide-vue-next';
 import ToolHeader from '../components/ToolHeader.vue';
 import DeviceList from '../components/DeviceList.vue';
 import ConnectionError from '../components/ConnectionError.vue';
@@ -111,6 +121,8 @@ const resettingDevices = ref(new Set<string>());
 const deviceStatuses = ref(new Map<string, { status: 'resetting' | 'success' | 'failed'; error?: string }>());
 const isResetting = ref(false);
 const showResults = ref(false);
+const currentResetIndex = ref(0);
+const totalResetCount = ref(0);
 const resetResults = ref({
   success: [] as string[],
   failed: [] as Array<{ deviceId: string; error: string }>,
@@ -119,6 +131,11 @@ const isAuthenticated = ref(false);
 
 // Get current URL from page context
 const { currentUrl } = usePageContext();
+
+const resetProgress = computed(() => {
+  if (totalResetCount.value === 0) return 0;
+  return Math.round((currentResetIndex.value / totalResetCount.value) * 100);
+});
 
 const initialize = async (force = false) => {
   try {
@@ -161,9 +178,15 @@ const resetSelectedDevices = async () => {
   // Clear previous statuses
   deviceStatuses.value.clear();
   
+  // Initialize progress tracking
+  currentResetIndex.value = 0;
+  totalResetCount.value = selectedDevices.value.size;
+  
   const deviceIds = Array.from(selectedDevices.value);
   
-  for (const deviceId of deviceIds) {
+  for (let i = 0; i < deviceIds.length; i++) {
+    const deviceId = deviceIds[i];
+    currentResetIndex.value = i;
     try {
       // Mark as resetting
       resettingDevices.value.add(deviceId);
@@ -186,6 +209,7 @@ const resetSelectedDevices = async () => {
   }
   
   isResetting.value = false;
+  currentResetIndex.value = totalResetCount.value; // Set to 100% when done
   
   // Clear selection after reset
   selectedDevices.value.clear();
@@ -253,19 +277,19 @@ onMounted(() => {
   padding: 1rem;
   background: white;
   border-top: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: center;
 }
 
 .reset-btn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  background: #3b82f6;
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--primary-color, #2563eb);
   color: white;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -273,12 +297,52 @@ onMounted(() => {
 }
 
 .reset-btn:hover:not(:disabled) {
-  background: #2563eb;
+  background: var(--primary-hover, #1d4ed8);
 }
 
 .reset-btn:disabled {
-  opacity: 0.7;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Progress Bar Styles */
+.reset-progress {
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.375rem;
+  margin-top: 0.75rem;
+}
+
+.progress-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-color, #2563eb);
+  transition: width 0.3s ease;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Modal Styles */

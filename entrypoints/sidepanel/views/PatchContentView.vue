@@ -151,6 +151,16 @@
           <Code :size="16" />
           {{ isReplacing ? 'Patching... Do not close sidepanel' : `Patch ${selectedBots.size} Bot${selectedBots.size > 1 ? 's' : ''}` }}
         </button>
+        
+        <div v-if="isReplacing" class="patch-progress">
+          <div class="progress-info">
+            <Loader2 :size="16" class="spinner" />
+            <span>Patching bot {{ currentPatchIndex + 1 }} of {{ totalPatchCount }}...</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: patchProgress + '%' }"></div>
+          </div>
+        </div>
       </div>
       
       <!-- Results Modal -->
@@ -215,7 +225,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
-import { Info, Code, CheckCircle, XCircle, X, AlertCircle } from 'lucide-vue-next';
+import { Info, Code, CheckCircle, XCircle, X, AlertCircle, Loader2 } from 'lucide-vue-next';
 import ToolHeader from '../components/ToolHeader.vue';
 import BotList from '../components/BotList.vue';
 import ConnectionError from '../components/ConnectionError.vue';
@@ -248,6 +258,8 @@ const updatingBots = ref(new Set<string>());
 const botStatuses = ref(new Map<string, { status: 'updating' | 'success' | 'skipped' | 'failed'; error?: string }>());
 const isReplacing = ref(false);
 const showResults = ref(false);
+const currentPatchIndex = ref(0);
+const totalPatchCount = ref(0);
 const replaceResults = ref({
   success: [] as Array<{ fileId: string; count: number }>,
   skipped: [] as string[],
@@ -302,6 +314,11 @@ const searchMode = computed({
 
 const hasMore = computed(() => {
   return currentOffset.value + bots.value.length < totalBots.value;
+});
+
+const patchProgress = computed(() => {
+  if (totalPatchCount.value === 0) return 0;
+  return Math.round((currentPatchIndex.value / totalPatchCount.value) * 100);
 });
 
 // Reload when URL changes to a different folder
@@ -467,11 +484,17 @@ const replaceInSelectedBots = async () => {
     failed: [],
   };
   
+  // Initialize progress tracking
+  currentPatchIndex.value = 0;
+  totalPatchCount.value = selectedBots.value.size;
+  
   try {
     const fileIds = Array.from(selectedBots.value);
     
     // Process each bot
-    for (const fileId of fileIds) {
+    for (let i = 0; i < fileIds.length; i++) {
+      const fileId = fileIds[i];
+      currentPatchIndex.value = i;
       try {
         // Notify that we're starting to update this bot
         botStatuses.value.set(fileId, { status: 'updating' });
@@ -552,6 +575,7 @@ const replaceInSelectedBots = async () => {
   } finally {
     isReplacing.value = false;
     updatingBots.value.clear();
+    currentPatchIndex.value = totalPatchCount.value; // Set to 100% when done
   }
 };
 
@@ -849,6 +873,46 @@ onMounted(() => {
 .replace-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Progress Bar Styles */
+.patch-progress {
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.375rem;
+  margin-top: 0.75rem;
+}
+
+.progress-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-color, #2563eb);
+  transition: width 0.3s ease;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Modal Styles */

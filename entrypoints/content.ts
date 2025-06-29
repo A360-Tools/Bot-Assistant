@@ -179,7 +179,7 @@ export default defineContentScript({
     }
 
     // Listen for messages from extension (sidepanel/background)
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener((request, _sender, sendResponse) => {
       if (request.action === 'ping') {
         sendResponse({ success: true, pong: true });
         return true;
@@ -210,8 +210,17 @@ export default defineContentScript({
       }
     });
     
+    // Track current observer to allow cleanup
+    let currentTaskObserver: MutationObserver | null = null;
+    
     // Watch for save button status changes for Best Practices tool
     function addTaskSavedObserver() {
+      // Clean up any existing observer
+      if (currentTaskObserver) {
+        currentTaskObserver.disconnect();
+        currentTaskObserver = null;
+      }
+      
       let mainLayout = document.getElementById("root");
       if (!mainLayout) {
         window.setTimeout(addTaskSavedObserver, 500);
@@ -254,7 +263,7 @@ export default defineContentScript({
                 z-index: 9999;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.15);
               `;
-              indicator.textContent = 'Bot saved - refreshing analysis...';
+              indicator.textContent = 'Bot saved - refreshing content and analysis...';
               document.body.appendChild(indicator);
               setTimeout(() => indicator.remove(), 3000);
             }
@@ -263,13 +272,57 @@ export default defineContentScript({
         }
       };
       
-      const taskObserver = new MutationObserver(taskCallback);
-      taskObserver.observe(mainLayout, taskConfig);
+      currentTaskObserver = new MutationObserver(taskCallback);
+      currentTaskObserver.observe(mainLayout, taskConfig);
     }
     
-    // Initialize save button watcher if on a bot edit page
-    if (window.location.href.includes('/edit') || window.location.href.includes('/taskbots/')) {
-      addTaskSavedObserver();
+    // Handle SPA navigation
+    function handleNavigation() {
+      const currentUrl = window.location.href;
+      
+      // Check if we're on a bot edit page
+      if (currentUrl.includes('/edit') || currentUrl.includes('/taskbots/')) {
+        // Initialize observer if not already running
+        if (!currentTaskObserver) {
+          addTaskSavedObserver();
+        }
+      } else {
+        // Clean up observer if we navigated away from bot edit page
+        if (currentTaskObserver) {
+          currentTaskObserver.disconnect();
+          currentTaskObserver = null;
+        }
+      }
     }
+    
+    // Listen for browser navigation events
+    window.addEventListener('popstate', handleNavigation);
+    window.addEventListener('hashchange', handleNavigation);
+    
+    // Intercept History API for programmatic navigation
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    history.pushState = function(...args) {
+      originalPushState.apply(history, args);
+      setTimeout(handleNavigation, 100); // Small delay to ensure DOM updates
+    };
+    
+    history.replaceState = function(...args) {
+      originalReplaceState.apply(history, args);
+      setTimeout(handleNavigation, 100);
+    };
+    
+    // Also use a periodic check as fallback for any missed navigation
+    let lastUrl = window.location.href;
+    setInterval(() => {
+      if (window.location.href !== lastUrl) {
+        lastUrl = window.location.href;
+        handleNavigation();
+      }
+    }, 500);
+    
+    // Initialize on page load
+    handleNavigation();
   },
 });

@@ -44,6 +44,16 @@
           <Package :size="16" />
           {{ isUpdating ? 'Updating... Do not close sidepanel' : `Update ${selectedBots.size} Bot${selectedBots.size > 1 ? 's' : ''}` }}
         </button>
+        
+        <div v-if="isUpdating" class="update-progress">
+          <div class="progress-info">
+            <Loader2 :size="16" class="spinner" />
+            <span>Updating bot {{ currentUpdateIndex + 1 }} of {{ totalUpdateCount }}...</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: updateProgress + '%' }"></div>
+          </div>
+        </div>
       </div>
       
       <!-- Results Modal -->
@@ -107,7 +117,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue';
-import { Info, Package, CheckCircle, XCircle, X } from 'lucide-vue-next';
+import { Info, Package, CheckCircle, XCircle, X, Loader2 } from 'lucide-vue-next';
 import ToolHeader from '../components/ToolHeader.vue';
 import BotList from '../components/BotList.vue';
 import ConnectionError from '../components/ConnectionError.vue';
@@ -137,6 +147,8 @@ const updatingBots = ref(new Set<string>());
 const botStatuses = ref(new Map<string, { status: 'updating' | 'success' | 'skipped' | 'failed'; error?: string }>());
 const isUpdating = ref(false);
 const showResults = ref(false);
+const currentUpdateIndex = ref(0);
+const totalUpdateCount = ref(0);
 const updateResults = ref({
   success: [] as string[],
   skipped: [] as string[],
@@ -171,6 +183,11 @@ const isAuthenticated = computed({
 
 const hasMore = computed(() => {
   return currentOffset.value + bots.value.length < totalBots.value;
+});
+
+const updateProgress = computed(() => {
+  if (totalUpdateCount.value === 0) return 0;
+  return Math.round((currentUpdateIndex.value / totalUpdateCount.value) * 100);
 });
 
 // Reload when URL changes to a different folder
@@ -275,6 +292,10 @@ const updateSelectedBots = async () => {
   updatingBots.value = new Set(selectedBots.value);
   botStatuses.value.clear();
   
+  // Initialize progress tracking
+  currentUpdateIndex.value = 0;
+  totalUpdateCount.value = selectedBots.value.size;
+  
   try {
     const fileIds = Array.from(selectedBots.value);
     
@@ -282,11 +303,21 @@ const updateSelectedBots = async () => {
     const onProgress = (fileId: string, status: 'updating' | 'success' | 'skipped' | 'failed', error?: string) => {
       botStatuses.value.set(fileId, { status, error });
       
+      // Update progress when starting a new bot
+      if (status === 'updating') {
+        const processedCount = Array.from(botStatuses.value.values()).filter(s => s.status !== 'updating').length;
+        currentUpdateIndex.value = processedCount;
+      }
+      
       // Update the updatingBots set based on status
       if (status !== 'updating') {
         updatingBots.value.delete(fileId);
         // Force reactivity
         updatingBots.value = new Set(updatingBots.value);
+        
+        // Update progress when a bot is completed
+        const processedCount = Array.from(botStatuses.value.values()).filter(s => s.status !== 'updating').length;
+        currentUpdateIndex.value = processedCount;
       }
     };
     
@@ -314,6 +345,7 @@ const updateSelectedBots = async () => {
   } finally {
     isUpdating.value = false;
     updatingBots.value.clear();
+    currentUpdateIndex.value = totalUpdateCount.value; // Set to 100% when done
     // Don't clear botStatuses here - keep them for display
   }
 };
@@ -323,9 +355,7 @@ const getBotName = (botId: string): string => {
   return bot?.name || botId;
 };
 
-const getSkipReason = (botId: string): string => {
-  // Check bot status to determine why it was skipped
-  const status = botStatuses.value.get(botId);
+const getSkipReason = (_botId: string): string => {
   // For now, return a generic message. In the future, we could track specific reasons
   return 'Already up to date or no packages to update';
 };
@@ -428,6 +458,46 @@ onMounted(() => {
 .update-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Progress Bar Styles */
+.update-progress {
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 0.375rem;
+  margin-top: 0.75rem;
+}
+
+.progress-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-color, #2563eb);
+  transition: width 0.3s ease;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Modal Styles */
