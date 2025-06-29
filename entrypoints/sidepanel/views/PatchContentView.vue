@@ -543,6 +543,9 @@ const replaceInSelectedBots = async () => {
           chrome.tabs.sendMessage(tabs[0].id, { action: 'refreshFolderList' });
         }
       });
+      
+      // Refresh the bot list to show updated content
+      await loadBots();
     }
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to patch content';

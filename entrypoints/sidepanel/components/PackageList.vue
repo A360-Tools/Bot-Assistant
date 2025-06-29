@@ -306,6 +306,10 @@ watch(() => props.packages, () => {
   align-items: center;
 }
 
+.package-checkbox input[type="checkbox"] {
+  cursor: pointer;
+}
+
 .package-icon {
   flex-shrink: 0;
 }

@@ -288,6 +288,10 @@ const deviceStatus = (deviceId: string) => {
   align-items: center;
 }
 
+.device-checkbox input[type="checkbox"] {
+  cursor: pointer;
+}
+
 .device-icon {
   color: #3b82f6;
   display: flex;

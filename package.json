@@ -1,6 +1,6 @@
 {
   "name": "Bot Assistant",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Automation Anywhere A360 Assistant",
   "main": "index.js",
   "scripts": {

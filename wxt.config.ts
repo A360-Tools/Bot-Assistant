@@ -5,7 +5,7 @@ export default defineConfig({
   manifest: {
     name: 'Bot Assistant',
     description: 'Automation Anywhere A360 Assistant',
-    version: '3.0.4',
+    version: '3.0.5',
     permissions: ['sidePanel', 'storage', 'tabs'],
     // No host_permissions - works on all sites
     icons: {

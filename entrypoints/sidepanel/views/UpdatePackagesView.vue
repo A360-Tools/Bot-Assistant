@@ -305,6 +305,9 @@ const updateSelectedBots = async () => {
           chrome.tabs.sendMessage(tabs[0].id, { action: 'refreshFolderList' });
         }
       });
+      
+      // Refresh the bot list to show updated packages
+      await loadBots();
     }
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to update packages';
