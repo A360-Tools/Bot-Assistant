@@ -222,38 +222,3 @@ bot-assistant-extension/
 ├── types/               # TypeScript type definitions
 └── wxt.config.ts        # WXT configuration
 ```
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### How to Contribute
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support
-
-- 🐛 Report issues on [GitHub Issues](https://github.com/A360-Tools/Bot-Assistant/issues)
-- 💬 Join our community discussions
-- 📚 Check the [Wiki](https://github.com/A360-Tools/Bot-Assistant/wiki) for detailed documentation
-- 📧 Contact: support@a360-tools.com
-
-## 🙏 Acknowledgments
-
-Built with love by the A360 Tools team and contributors.
-
-Special thanks to:
-- The Automation Anywhere community for feedback and suggestions
-- All contributors who have helped improve Bot Assistant
-- Open source projects that make this extension possible
-
----
-
-**Bot Assistant** - Empowering Automation Anywhere developers with intelligent tools 🚀
